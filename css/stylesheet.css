@@ -1,0 +1,32 @@
+/* ========================================== */
+/* ESTILOS PERSONALIZADOS - DARE-TECH THEME   */
+/* ========================================== */
+
+/* Efecto de brillo de neón para textos seleccionados o destacados */
+.glow-cyan {
+    text-shadow: 0 0 12px rgba(0, 243, 255, 0.4);
+}
+
+/* Transiciones fluidas globales para elementos interactivos */
+a, button, input, textarea {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Personalización de la barra de desplazamiento lateral de la página */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0a0e14;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #162032;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 243, 255, 0.2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #00f3ff;
+}

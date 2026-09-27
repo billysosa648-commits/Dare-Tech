@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dare-Tech | Servicio Técnico & Reparación Especializada</title>
+    
+    <!-- Motor de estilos Tailwind CSS (Cargado por CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fuentes de Google Fonts (Fira Code para estética de consola) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Enlace a la hoja de estilos personalizada -->
+    <link rel="stylesheet" href="css/stylesheet.css">
+</head>
+<body class="bg-[#0a0e14] text-slate-200 font-mono antialiased selection:bg-[#00f3ff] selection:text-black">
+
+    <!-- ========================================== -->
+    <!-- SECCIÓN: CABECERA Y MENÚ DE NAVEGACIÓN       -->
+    <!-- ========================================== -->
+    <header class="sticky top-0 z-50 bg-[#0a0e14]/90 backdrop-blur-md border-b border-[#00f3ff]/20 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <!-- Logotipo de la marca -->
+            <a href="#" class="flex items-center gap-2 text-lg font-bold text-[#00f3ff] hover:opacity-80 transition-opacity">
+                <span class="text-[#00ff66]">&gt;</span> Dare-Tech<span class="animate-pulse">_</span>
+            </a>
+            <!-- Enlaces de navegación rápida -->
+            <nav class="hidden md:flex items-center gap-6 text-sm">
+                <a href="#inicio" class="hover:text-[#00f3ff] transition-colors">&gt; /inicio</a>
+                <a href="#nosotros" class="hover:text-[#00f3ff] transition-colors">&gt; /nosotros</a>
+                <a href="#servicios" class="hover:text-[#00f3ff] transition-colors">&gt; /servicios</a>
+                <a href="#proyectos" class="hover:text-[#00f3ff] transition-colors">&gt; /proyectos</a>
+                <a href="#diagnostico" class="px-4 py-1.5 border border-[#00f3ff] text-[#00f3ff] hover:bg-[#00f3ff] hover:text-black font-semibold rounded transition-all shadow-[0_0_10px_rgba(0,243,255,0.2)]">
+                    ./diagnostico.sh
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- SECCIÓN: HERO / BIENVENIDA PRINCIPAL        -->
+    <!-- ========================================== -->
+    <section id="inicio" class="min-h-[85vh] flex items-center justify-center relative overflow-hidden px-4 py-20 border-b border-[#00f3ff]/10">
+        <!-- Fondo de cuadrícula estilo terminal -->
+        <div class="absolute inset-0 bg-[radial-gradient(#00f3ff_1px,transparent_1px)] [background-size:32px_32px] opacity-10"></div>
+        
+        <div class="max-w-4xl mx-auto text-center relative z-10 space-y-6">
+            <div class="inline-block px-3 py-1 rounded-full border border-[#00ff66]/40 bg-[#00ff66]/10 text-[#00ff66] text-xs font-semibold tracking-wider uppercase mb-2">
+                🇪🇨 Orgullo Ecuatoriano · Soporte Técnico Avanzado
+            </div>
+            <h1 class="text-3xl md:text-6xl font-bold tracking-tight text-white leading-tight">
+                Ingeniería, Diagnóstico y Reparación con <span class="text-[#00f3ff] glow-cyan">Precisión Digital</span>
+            </h1>
+            <p class="text-slate-400 text-base md:text-lg max-w-2xl mx-auto">
+                Optimizamos hardware y software con estándar técnico profesional. De la consola a tu dispositivo, devolvemos la potencia que necesitas.
+            </p>
+            <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="#diagnostico" class="w-full sm:w-auto px-8 py-3.5 bg-[#00f3ff] text-black font-bold rounded hover:bg-[#00ff66] transition-all transform hover:-translate-y-0.5 shadow-[0_0_15px_rgba(0,243,255,0.4)]">
+                    Iniciar Diagnóstico Interactivo
+                </a>
+                <a href="#servicios" class="w-full sm:w-auto px-8 py-3.5 border border-slate-700 hover:border-[#00f3ff] text-slate-300 hover:text-[#00f3ff] rounded transition-all">
+                    Ver Servicios
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECCIÓN: SOBRE NOSOTROS (QUIÉNES SOMOS)    -->
+    <!-- ========================================== -->
+    <section id="nosotros" class="py-20 px-4 border-b border-[#00f3ff]/10 bg-[#0d121d]/50">
+        <div class="max-w-5xl mx-auto">
+            <div class="terminal-card rounded-lg border border-[#00f3ff]/30 overflow-hidden bg-[#0d1117] shadow-xl">
+                <!-- Barra superior simulando una terminal de comandos -->
+                <div class="bg-[#161b22] px-4 py-2 flex items-center gap-2 border-b border-[#00f3ff]/20">
+                    <span class="w-3 h-3 rounded-full bg-red-500/80 inline-block"></span>
+                    <span class="w-3 h-3 rounded-full bg-yellow-500/80 inline-block"></span>
+                    <span class="w-3 h-3 rounded-full bg-green-500/80 inline-block"></span>
+                    <span class="text-xs text-slate-400 ml-2">about_us.md — Dare-Tech</span>
+                </div>
+                <div class="p-6 md:p-10 space-y-6">
+                    <h2 class="text-2xl md:text-3xl font-bold text-[#00f3ff]">&gt; ¿Quiénes Somos?</h2>
+                    <p class="text-slate-300 leading-relaxed">
+                        Somos ecuatorianos apasionados por la tecnología y la reparación. Nacimos con la visión de elevar los estándares de servicio técnico en el país, combinando la precisión analítica de la ingeniería con un trato cercano, honesto y transparente.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+                        <div class="p-4 border border-slate-800 rounded bg-[#0a0e14]">
+                            <div class="text-[#00ff66] font-bold text-lg mb-1">&gt; Cercanía</div>
+                            <p class="text-xs text-slate-400">Atención directa sin intermediarios técnicos confusos.</p>
+                        </div>
+                        <div class="p-4 border border-slate-800 rounded bg-[#0a0e14]">
+                            <div class="text-[#00f3ff] font-bold text-lg mb-1">&gt; Calidad</div>
+                            <p class="text-xs text-slate-400">Componentes certificados y metodologías probadas.</p>
+                        </div>
+                        <div class="p-4 border border-slate-800 rounded bg-[#0a0e14]">
+                            <div class="text-[#00ff66] font-bold text-lg mb-1">&gt; Pasión Local</div>
+                            <p class="text-xs text-slate-400">Talento técnico ecuatoriano comprometido con tus equipos.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECCIÓN: SERVICIOS ESPECIALIZADOS          -->
+    <!-- ========================================== -->
+    <section id="servicios" class="py-20 px-4 border-b border-[#00f3ff]/10">
+        <div class="max-w-6xl mx-auto space-y-12">
+            <div class="text-center space-y-2">
+                <h2 class="text-3xl font-bold text-white">&gt; /servicios_especializados</h2>
+                <p class="text-slate-400 text-sm">Soluciones integrales de hardware y software</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Tarjeta de Software -->
+                <div class="p-8 border border-[#00f3ff]/30 rounded-lg bg-[#0d1117] hover:border-[#00f3ff] transition-all group hover:shadow-[0_0_20px_rgba(0,243,255,0.15)]">
+                    <div class="text-[#00f3ff] text-3xl mb-4 group-hover:scale-110 transition-transform">💻</div>
+                    <h3 class="text-xl font-bold text-white mb-3">&gt; Reparación y Optimización de Software</h3>
+                    <ul class="space-y-2 text-sm text-slate-300">
+                        <li class="flex items-start gap-2"><span class="text-[#00ff66]">&gt;</span> Diagnóstico avanzado del sistema operativo.</li>
+                        <li class="flex items-start gap-2"><span class="text-[#00ff66]">&gt;</span> Limpieza profunda y eliminación de malware.</li>
+                        <li class="flex items-start gap-2"><span class="text-[#00ff66]">&gt;</span> Optimización de rendimiento y velocidad.</li>
+                        <li class="flex items-start gap-2"><span class="text-[#00ff66]">&gt;</span> Recuperación segura de datos e información.</li>
+                    </ul>
+                </div>
+
+                <!-- Tarjeta de Hardware -->
+                <div class="p-8 border border-[#00ff66]/30 rounded-lg bg-[#0d1117] hover:border-[#00f3ff] transition-all group hover:shadow-[0_0_20px_rgba(0,255,102,0.15)]">
+                    <div class="text-[#00ff66] text-3xl mb-4 group-hover:scale-110 transition-transform">📱</div>
+                    <h3 class="text-xl font-bold text-white mb-3">&gt; Reemplazo de Módulos y Hardware</h3>
+                    <ul class="space-y-2 text-sm text-slate-300">
+                        <li class="flex items-start gap-2"><span class="text-[#00f3ff]">&gt;</span> Sustitución de pantallas de alta gama / repuestos A+.</li>
+                        <li class="flex items-start gap-2"><span class="text-[#00f3ff]">&gt;</span> Cambio de baterías con ciclos de vida garantizados.</li>
+                        <li class="flex items-start gap-2"><span class="text-[#00f3ff]">&gt;</span> Reparación de puertos de carga y jacks de audio.</li>
+                        <li class="flex items-start gap-2"><span class="text-[#00f3ff]">&gt;</span> Mantenimiento térmico de componentes internos.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECCIÓN: DIAGNÓSTICO INTERACTIVO (BASH UI) -->
+    <!-- ========================================== -->
+    <section id="diagnostico" class="py-20 px-4 border-b border-[#00f3ff]/10 bg-[#05080c]">
+        <div class="max-w-4xl mx-auto">
+            <div class="border-2 border-[#00f3ff] rounded-lg bg-[#0a0e14] shadow-[0_0_30px_rgba(0,243,255,0.2)] overflow-hidden">
+                <div class="bg-[#161b22] px-4 py-3 border-b border-[#00f3ff]/30 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                        <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
+                        <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                        <span class="text-xs text-slate-400 font-bold ml-2">bash - daretech_diagnose_v2.4.sh</span>
+                    </div>
+                    <span class="text-xs text-[#00ff66]">● ONLINE</span>
+                </div>
+
+                <div class="p-6 md:p-8 space-y-8">
+                    <div class="space-y-2 border-b border-slate-800 pb-6">
+                        <h2 class="text-xl md:text-2xl font-bold text-[#00f3ff] tracking-wide">
+                            BIENVENIDO A DARE-TECH
+                        </h2>
+                        <p class="text-xs md:text-sm text-[#00ff66] font-medium leading-relaxed uppercase">
+                            SOMOS ECUATORIANOS APASIONADOS POR LA TECNOLOGÍA Y LA REPARACIÓN. DESCRIBE TU PROBLEMA PARA UNA ASESORÍA TÉCNICA INMEDIATA.
+                        </p>
+                    </div>
+
+                    <!-- Paso 1: Selección de Marca dinámicas por JS -->
+                    <div class="space-y-3">
+                        <label class="block text-sm font-bold text-slate-300">
+                            <span class="text-[#00f3ff]">PASO 1:</span> Selecciona la Marca de tu Dispositivo
+                        </label>
+                        <div id="brand-buttons" class="flex flex-wrap gap-2"></div>
+                        <div id="other-brand-container" class="hidden mt-3">
+                            <input type="text" id="custom-brand-input" placeholder="Escribe la marca de tu dispositivo..." class="terminal-input w-full p-3 rounded border border-[#00f3ff]/50 bg-[#05080c] text-white text-sm focus:outline-none focus:border-[#00f3ff]">
+                        </div>
+                    </div>
+
+                    <!-- Paso 2: Selección de Modelo dinámicos por JS -->
+                    <div id="step-model" class="space-y-3 hidden">
+                        <label class="block text-sm font-bold text-slate-300">
+                            <span class="text-[#00f3ff]">PASO 2:</span> Selecciona o Escribe el Modelo
+                        </label>
+                        <div id="model-buttons" class="flex flex-wrap gap-2"></div>
+                        <div id="other-model-container" class="hidden mt-3">
+                            <input type="text" id="custom-model-input" placeholder="Escribe el modelo..." class="terminal-input w-full p-3 rounded border border-[#00f3ff] bg-[#05080c] text-white text-sm focus:outline-none focus:border-[#00ff66]">
+                        </div>
+                    </div>
+
+                    <!-- Paso 3: Descripción de la Falla -->
+                    <div class="space-y-3">
+                        <label class="block text-sm font-bold text-slate-300">
+                            <span class="text-[#00f3ff]">PASO 3:</span> Descripción de la Falla
+                        </label>
+                        <textarea id="issue-description" rows="4" placeholder="Describe el problema de tu equipo (Ej: No enciende, pantalla rota, cuenta Google...)" class="terminal-input w-full p-3 rounded border-2 border-[#00f3ff] bg-[#05080c] text-white text-sm focus:outline-none focus:border-[#00ff66] transition-colors resize-none"></textarea>
+                    </div>
+
+                    <!-- Paso 4: Datos de Contacto -->
+                    <div class="space-y-4">
+                        <label class="block text-sm font-bold text-slate-300">
+                            <span class="text-[#00f3ff]">PASO 4:</span> Datos de Contacto
+                        </label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" id="user-name" placeholder="Tu Nombre" class="terminal-input p-3 rounded border border-[#00f3ff]/50 bg-[#05080c] text-white text-sm focus:outline-none focus:border-[#00f3ff]">
+                            <input type="text" id="user-contact" placeholder="Teléfono o Email" class="terminal-input p-3 rounded border border-[#00f3ff]/50 bg-[#05080c] text-white text-sm focus:outline-none focus:border-[#00f3ff]">
+                        </div>
+                    </div>
+
+                    <!-- Botón de Envío seguro a Telegram -->
+                    <div class="pt-4">
+                        <button id="send-btn" type="button" class="w-full py-4 border-2 border-[#00f3ff] bg-[#0a0e14] text-[#00f3ff] font-bold rounded hover:bg-[#00f3ff] hover:text-black transition-all text-center tracking-wider uppercase shadow-[0_0_15px_rgba(0,243,255,0.2)]">
+                            [ ENVIAR REPORTE A BOT DE TELEGRAM ]
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECCIÓN: GALERÍA DE PROYECTOS Y VIDEOS     -->
+    <!-- ========================================== -->
+    <section id="proyectos" class="py-20 px-4 border-b border-[#00f3ff]/10">
+        <div class="max-w-6xl mx-auto space-y-12">
+            <div class="text-center space-y-2">
+                <h2 class="text-3xl font-bold text-white">&gt; /galeria_reparaciones</h2>
+                <p class="text-slate-400 text-sm">Casos de éxito y procedimientos técnicos completados (FRP &amp; Desbloqueos)</p>
+            </div>
+
+            <!-- Contenedor grid de los videos de YouTube Shorts -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                
+                <!-- Video 1: Redmi 5A (FRP) -->
+                <div class="border border-slate-800 bg-[#0d1117] rounded overflow-hidden hover:border-[#00f3ff] transition-all shadow-lg">
+                    <div class="h-80 bg-black relative flex items-center justify-center">
+                        <iframe class="w-full h-full" src="https://www.youtube.com/embed/BH7NkHKnlxs" title="Redmi 5A FRP" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <div class="p-4 space-y-2">
+                        <span class="text-xs text-[#00ff66]">&gt; Redmi 5A</span>
+                        <h3 class="text-white font-bold text-sm">Eliminación de cuenta Google / FRP</h3>
+                        <p class="text-xs text-slate-400">Procedimiento seguro de bypass de seguridad y restablecimiento de cuenta.</p>
+                    </div>
+                </div>
+
+                <!-- Video 2: Honor Magic 7 Lite (FRP) -->
+                <div class="border border-slate-800 bg-[#0d1117] rounded overflow-hidden hover:border-[#00f3ff] transition-all shadow-lg">
+                    <div class="h-80 bg-black relative flex items-center justify-center">
+                        <iframe class="w-full h-full" src="https://www.youtube.com/embed/oNBSBnr0ZQE" title="Honor Magic 7 Lite FRP" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <div class="p-4 space-y-2">
+                        <span class="text-xs text-[#00ff66]">&gt; Honor Magic 7 Lite</span>
+                        <h3 class="text-white font-bold text-sm">Eliminación de cuenta Google / FRP</h3>
+                        <p class="text-xs text-slate-400">Desbloqueo de seguridad FRP avanzado en procesadores de última generación.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+<!-- ========================================== -->
+    <!-- SECCIÓN: INFORMACIÓN DE CONTACTO           -->
+    <!-- ========================================== -->
+    <section id="contacto" class="py-16 px-4 border-b border-[#00f3ff]/10 bg-[#0d121d]/30">
+        <div class="max-w-4xl mx-auto space-y-8 text-center">
+            <div class="space-y-2">
+                <h2 class="text-2xl md:text-3xl font-bold text-white">&gt; /contacto_directo</h2>
+                <p class="text-slate-400 text-sm">Comunícate con nosotros o visítanos directamente</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+                <!-- Tarjeta de Correo -->
+                <div class="p-6 border border-slate-800 rounded bg-[#0d1117] hover:border-[#00f3ff] transition-all space-y-2">
+                    <div class="text-[#00f3ff] text-xl">✉️</div>
+                    <h3 class="text-white font-bold text-sm">&gt; Correo Electrónico</h3>
+                    <a href="mailto:billysosa648@gmail.com" class="text-xs text-slate-300 hover:text-[#00ff66] transition-colors block break-all">
+                        billysosa648@gmail.com
+                    </a>
+                </div>
+
+                <!-- Tarjeta de Teléfono -->
+                <div class="p-6 border border-slate-800 rounded bg-[#0d1117] hover:border-[#00f3ff] transition-all space-y-2">
+                    <div class="text-[#00ff66] text-xl">📞</div>
+                    <h3 class="text-white font-bold text-sm">&gt; Teléfono / WhatsApp</h3>
+                    <a href="tel:+5939228689" class="text-xs text-slate-300 hover:text-[#00ff66] transition-colors block">
+                        +593 92 286 89
+                    </a>
+                </div>
+
+                <!-- Tarjeta de Ubicación -->
+                <div class="p-6 border border-slate-800 rounded bg-[#0d1117] hover:border-[#00f3ff] transition-all space-y-2">
+                    <div class="text-[#00f3ff] text-xl">📍</div>
+                    <h3 class="text-white font-bold text-sm">&gt; Ubicación</h3>
+                    <p class="text-xs text-slate-300">
+                        Guayaquil, Ecuador
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- ========================================== -->
+    <!-- SECCIÓN: PIE DE PÁGINA (FOOTER)            -->
+    <!-- ========================================== -->
+    <footer class="py-10 px-4 text-center text-xs text-slate-500 border-t border-slate-800 space-y-2">
+        <p class="text-slate-400">Dare-Tech Ecuador © 2026 — Pasión por la Tecnología y la Reparación</p>
+        
+    </footer>
+
+    <!-- Enlace al script principal de JavaScript -->
+    <script src="js/scripts.js"></script>
+</body>
+</html>
