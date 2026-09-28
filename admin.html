@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Admin - Dare-Tech</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="stylesheet.css">
+</head>
+<body class="bg-[#0a0e14] text-slate-300 min-h-screen p-6">
+
+  <!-- ============ PANTALLA DE LOGIN ============ -->
+  <div id="login-screen" class="max-w-sm mx-auto mt-20">
+    <h1 class="text-2xl font-bold text-[#00f3ff] glow-cyan mb-6 text-center">[ ACCESO ADMIN ]</h1>
+    <div class="bg-[#0d1117] border border-[#00f3ff]/20 rounded p-6">
+      <label class="block text-sm text-slate-400 mb-1">Usuario</label>
+      <input id="login-username" type="text" class="w-full bg-[#05080c] border border-[#00f3ff]/40 rounded px-3 py-2 mb-4 focus:outline-none focus:border-[#00f3ff]">
+
+      <label class="block text-sm text-slate-400 mb-1">Contraseña</label>
+      <input id="login-password" type="password" class="w-full bg-[#05080c] border border-[#00f3ff]/40 rounded px-3 py-2 mb-4 focus:outline-none focus:border-[#00f3ff]">
+
+      <button id="login-btn" class="w-full py-2 border border-[#00f3ff]/40 bg-[#05080c] text-[#00f3ff] rounded hover:bg-[#00f3ff]/15 hover:border-[#00f3ff] transition-all">
+        [ INGRESAR ]
+      </button>
+      <p id="login-error" class="text-red-400 text-sm mt-3 hidden"></p>
+    </div>
+  </div>
+
+  <!-- ============ PANEL (oculto hasta hacer login) ============ -->
+  <div id="panel-screen" class="hidden max-w-6xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-[#00f3ff] glow-cyan">[ PANEL DE DIAGNÓSTICOS ]</h1>
+      <button id="logout-btn" class="px-4 py-2 border border-red-400/40 text-red-400 rounded hover:bg-red-400/10 transition-all text-sm">
+        [ CERRAR SESIÓN ]
+      </button>
+    </div>
+
+    <div class="bg-[#0d1117] border border-[#00f3ff]/20 rounded overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-[#05080c] text-slate-400 text-left">
+          <tr>
+            <th class="p-3">Ticket</th>
+            <th class="p-3">Cliente</th>
+            <th class="p-3">Equipo</th>
+            <th class="p-3">Falla</th>
+            <th class="p-3">Estado</th>
+            <th class="p-3">Factura</th>
+          </tr>
+        </thead>
+        <tbody id="diagnostics-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: CREAR FACTURA ============ -->
+  <div id="invoice-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center p-4">
+    <div class="bg-[#0d1117] border border-[#00f3ff]/40 rounded p-6 w-full max-w-md">
+      <h2 class="text-lg font-bold text-[#00f3ff] mb-4">[ CREAR FACTURA — <span id="modal-ticket"></span> ]</h2>
+      <div id="modal-items"></div>
+      <button id="add-item-btn" class="text-sm text-[#00f3ff] mb-4">+ Agregar ítem</button>
+      <div class="flex gap-2">
+        <button id="modal-save-btn" class="flex-1 py-2 border border-[#00f3ff]/40 bg-[#05080c] text-[#00f3ff] rounded hover:bg-[#00f3ff]/15">[ GUARDAR ]</button>
+        <button id="modal-cancel-btn" class="flex-1 py-2 border border-slate-500/40 text-slate-400 rounded hover:bg-slate-500/10">[ CANCELAR ]</button>
+      </div>
+    </div>
+  </div>
+
+<script src="/js/admin.js"></script>
+</body>
+</html>
