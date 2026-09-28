@@ -1,22 +1,14 @@
 /* ========================================== */
-/* LÓGICA DE INTERACTIVIDAD Y ENVÍO A TELEGRAM  */
+/* LÓGICA DE INTERACTIVIDAD Y ENVÍO AL BACKEND  */
 /* ========================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
-    
-    // Base de datos local simulada para las marcas y sus respectivos modelos
-    const brandData = {
-        'Apple': ['iPhone 15', 'iPhone 14', 'iPhone 13', 'MacBook Air', 'iPad Pro', 'Otro Modelo'],
-        'Samsung': ['S24 Ultra', 'A55', 'Z Flip', 'S23', 'A34', 'Otro Modelo'],
-        'Xiaomi': ['Redmi Note 13', 'Poco X6 Pro', 'Xiaomi 14', 'Redmi 12', 'Otro Modelo'],
-        'Motorola': ['Edge 40', 'Moto G84', 'Razr 40', 'Moto G23', 'Otro Modelo'],
-        'HP': ['Pavilion', 'Victus', 'Spectre', 'ProBook', 'Otro Modelo'],
-        'Lenovo': ['ThinkPad', 'Legion', 'IdeaPad', 'Yoga', 'Otro Modelo'],
-        'Otro': []
-    };
+
+    const API_URL = 'http://localhost:4000/api'; // cámbialo cuando subas el backend a producción
 
     let selectedBrand = '';
     let selectedModel = '';
+    let brandsFromDB = [];
 
     // Referencias a los elementos del DOM de la sección de diagnóstico
     const brandContainer = document.getElementById('brand-buttons');
@@ -32,17 +24,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendBtn = document.getElementById('send-btn');
 
     // Función que inicializa y pinta los botones de las marcas en el Paso 1
-    function initBrands() {
+    async function initBrands() {
         if (!brandContainer) return;
-        brandContainer.innerHTML = '';
-        Object.keys(brandData).forEach(brand => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'term-btn px-4 py-2 border border-[#00f3ff]/40 bg-[#05080c] text-slate-400 text-sm rounded hover:border-[#00f3ff] hover:text-[#00f3ff] transition-all';
-            btn.textContent = `[${brand}]`;
-            btn.addEventListener('click', () => selectBrand(brand, btn));
-            brandContainer.appendChild(btn);
-        });
+        try {
+            const response = await fetch(`${API_URL}/brands`);
+            brandsFromDB = await response.json();
+
+            brandContainer.innerHTML = '';
+            brandsFromDB.forEach(brand => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'term-btn px-4 py-2 border border-[#00f3ff]/40 bg-[#05080c] text-slate-400 text-sm rounded hover:border-[#00f3ff] hover:text-[#00f3ff] transition-all';
+                btn.textContent = `[${brand.name}]`;
+                btn.addEventListener('click', () => selectBrand(brand, btn));
+                brandContainer.appendChild(btn);
+            });
+        } catch (error) {
+            console.error('Error al cargar las marcas:', error);
+        }
     }
 
     // Maneja la lógica de selección visual y despliegue del Paso 2 según la marca elegida
@@ -52,29 +51,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         btnElement.classList.add('bg-[#00f3ff]/15', 'border-[#00f3ff]', 'text-[#00f3ff]', 'font-bold');
 
-        selectedBrand = brand;
-        selectedModel = ''; 
+        selectedBrand = brand.name;
+        selectedModel = '';
         otherModelContainer.classList.add('hidden');
         customModelInput.value = '';
 
-        if (brand === 'Otro') {
+        if (brand.name === 'Otro') {
             otherBrandContainer.classList.remove('hidden');
             stepModel.classList.add('hidden');
         } else {
             otherBrandContainer.classList.add('hidden');
             customBrandInput.value = '';
-            renderModels(brand);
+            renderModels(brand.models);
         }
     }
 
     // Genera dinámicamente los botones de modelos correspondientes a la marca seleccionada
-    function renderModels(brand) {
+    function renderModels(models) {
         if (!modelContainer) return;
         modelContainer.innerHTML = '';
         stepModel.classList.remove('hidden');
 
-        const models = brandData[brand] || [];
-        models.forEach(model => {
+        (models || []).concat('Otro Modelo').forEach(model => {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'term-btn px-4 py-2 border border-[#00f3ff]/40 bg-[#05080c] text-slate-400 text-sm rounded hover:border-[#00f3ff] hover:text-[#00f3ff] transition-all';
@@ -106,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sendBtn.addEventListener('click', async () => {
             let finalBrand = selectedBrand === 'Otro' ? (customBrandInput.value.trim() || 'No especificada') : selectedBrand;
             let finalModel = selectedModel === 'Otro Modelo' ? (customModelInput.value.trim() || 'No especificado') : selectedModel;
-            
+
             const issue = issueInput.value.trim();
             const name = userNameInput.value.trim();
             const contact = userContactInput.value.trim();
@@ -119,29 +117,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Cambiar texto del botón a estado de carga
             const originalText = sendBtn.innerHTML;
-            sendBtn.innerHTML = '[ ENVIANDO REPORTE A TELEGRAM... ]';
+            sendBtn.innerHTML = '[ ENVIANDO REPORTE... ]';
             sendBtn.disabled = true;
 
-            // URL del Webhook seguro de Google Apps Script vinculado al Bot
-            const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwNHB0L_SWKhdDflbv4dJImiU6_NHyY4cPpkxeGn0ZxAgjIQUdMN5CBN0u-vqXKXDoD/exec';
-
             try {
-                // Envío de datos por método POST en segundo plano
-                await fetch(WEBHOOK_URL, {
+                const response = await fetch(`${API_URL}/diagnostics`, {
                     method: 'POST',
-                    mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        marca: finalBrand,
-                        modelo: finalModel,
-                        falla: issue,
-                        nombre: name,
-                        contacto: contact
+                        brand: finalBrand,
+                        model: finalModel,
+                        issue: issue,
+                        customerName: name,
+                        customerContact: contact
                     })
                 });
 
-                alert('¡Diagnóstico enviado con éxito! Un técnico te contactará pronto.');
-                
+                if (!response.ok) {
+                    throw new Error('El servidor respondió con un error');
+                }
+
+                const data = await response.json();
+                alert(`¡Diagnóstico enviado con éxito! Tu número de ticket es: ${data.ticketNumber}`);
+
                 // Limpieza total del formulario después de un envío exitoso
                 issueInput.value = '';
                 userNameInput.value = '';
