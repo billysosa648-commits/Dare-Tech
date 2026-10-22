@@ -26,10 +26,11 @@ async function run() {
     await mongoose.connect(process.env.MONGO_URI, { dbName, serverSelectionTimeoutMS: 10000, connectTimeoutMS: 10000 });
     dbCreated = true;
     const ensureInvoiceStore = require('../src/config/invoiceStore');
+    const ensureTicketCounter = require('../src/config/ticketStore');
     await ensureInvoiceStore();
+    await ensureTicketCounter();
 
     const Admin = require('../src/models/Admin');
-    const Diagnostic = require('../src/models/Diagnostic');
     const Invoice = require('../src/models/Invoice');
     const admin = await Admin.create({
       username: 'phase4-invoice-test',
@@ -41,12 +42,6 @@ async function run() {
       process.env.JWT_SECRET,
       { expiresIn: '5m', issuer: 'dare-tech-api', audience: 'dare-tech-admin' }
     );
-    const diagnostic = await Diagnostic.create({
-      ticketNumber: `DT-${String(Date.now()).slice(-8)}`,
-      brand: 'Prueba', model: 'Equipo temporal', issue: 'Prueba aislada de facturación',
-      customerName: 'Cliente de prueba', customerContact: '0000000000', status: 'recibido'
-    });
-
     const app = require('../src/app');
     server = await new Promise((resolve, reject) => {
       const listener = app.listen(0, '127.0.0.1', () => resolve(listener));
@@ -57,6 +52,26 @@ async function run() {
     const jsonHeaders = { ...auth, 'Content-Type': 'application/json' };
     const results = [];
     const check = (name, fn) => results.push({ name, fn });
+
+    check('tickets: cada reporte recibe un numero unico y consecutivo', async () => {
+      const tickets = [];
+      for (let index = 0; index < 3; index++) {
+        const response = await fetch(`${base}/diagnostics`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            brand: 'Prueba', model: 'Equipo temporal', issue: 'Prueba aislada de tickets',
+            customerName: 'Cliente temporal', customerContact: '0000000000'
+          })
+        });
+        assertStatus(response, 201, 'crear diagnóstico');
+        tickets.push(await response.json());
+      }
+      const numbers = tickets.map(ticket => ticket.ticketNumber);
+      assert.equal(new Set(numbers).size, 3, 'los tres tickets deben ser únicos');
+      assert(numbers.every(number => number.startsWith('DT-') && number.length >= 8 && number.length <= 13 && Number.isInteger(Number(number.slice(3)))), 'formato de ticket');
+      const sequences = numbers.map(number => Number(number.slice(3)));
+      assert.deepEqual(sequences, [sequences[0], sequences[0] + 1, sequences[0] + 2], 'secuencia consecutiva');
+    });
 
     check('seguridad: acceso a facturas sin token devuelve 401', async () => {
       assertStatus(await fetch(`${base}/facturas`), 401, 'GET sin token');
@@ -86,21 +101,24 @@ async function run() {
     });
 
     const requests = [
-      { key: 'phase4-invoice-flow-0001', items: [{ description: 'Pantalla', quantity: 2, unitPrice: 10 }] },
-      { key: 'phase4-invoice-flow-0002', items: [{ description: 'Batería', quantity: 1, unitPrice: 5 }] },
-      { key: 'phase4-invoice-flow-0003', items: [{ description: 'Mano de obra', quantity: 2, unitPrice: 4 }], discountCents: 100 }
+      { key: 'phase4-invoice-flow-0001', ticket: { brand: 'Samsung', model: 'S24', issue: 'Pantalla', customerName: 'Cliente uno', customerContact: '0990000001' }, items: [{ description: 'Pantalla', quantity: 2, unitPrice: 10 }] },
+      { key: 'phase4-invoice-flow-0002', ticket: { brand: 'Apple', model: 'iPhone', issue: 'Batería', customerName: 'Cliente dos', customerContact: '0990000002' }, items: [{ description: 'Batería', quantity: 1, unitPrice: 5 }] },
+      { key: 'phase4-invoice-flow-0003', ticket: { brand: 'Xiaomi', model: 'Redmi', issue: 'Servicio técnico', customerName: 'Cliente tres', customerContact: '0990000003' }, items: [{ description: 'Mano de obra', quantity: 2, unitPrice: 4 }], discountCents: 100 }
     ];
     const created = [];
     check('flujo: crea tres facturas independientes con totales correctos', async () => {
       for (const request of requests) {
         const response = await fetch(`${base}/facturas`, {
           method: 'POST', headers: { ...jsonHeaders, 'Idempotency-Key': request.key },
-          body: JSON.stringify({ diagnosticId: diagnostic._id.toString(), items: request.items, discountCents: request.discountCents || 0 })
+          body: JSON.stringify({ ticket: request.ticket, items: request.items, discountCents: request.discountCents || 0 })
         });
         assertStatus(response, 201, 'crear factura');
         created.push(await response.json());
       }
       assert.equal(new Set(created.map(invoice => invoice._id)).size, 3, 'cada POST debe insertar un documento distinto');
+      assert.equal(new Set(created.map(invoice => invoice.ticketNumber)).size, 3, 'cada factura debe crear un ticket distinto');
+      assert.equal(new Set(created.map(invoice => invoice.diagnosticId)).size, 3, 'cada factura debe crear su propio diagnóstico');
+      assert.deepEqual(created.map(invoice => invoice.customer.name), requests.map(request => request.ticket.customerName));
       const sequences = created.map(invoice => Number(invoice.invoiceNumber.slice(3)));
       assert.deepEqual(sequences, [sequences[0], sequences[0] + 1, sequences[0] + 2], 'numeración consecutiva');
       assert.deepEqual(created.map(invoice => invoice.totalCents), [2300, 575, 805], 'montos e IVA calculados en el servidor');
@@ -108,14 +126,27 @@ async function run() {
     check('flujo: repetición de Idempotency-Key no duplica factura', async () => {
       const response = await fetch(`${base}/facturas`, {
         method: 'POST', headers: { ...jsonHeaders, 'Idempotency-Key': requests[0].key },
-        body: JSON.stringify({ diagnosticId: diagnostic._id.toString(), items: requests[0].items })
+        body: JSON.stringify({ ticket: requests[0].ticket, items: requests[0].items })
       });
       assertStatus(response, 200, 'reintento idempotente');
       assert.equal((await response.json())._id, created[0]._id);
-      assert.equal(await Invoice.countDocuments({ diagnosticId: diagnostic._id }), 3, 'conteo sigue en tres');
+      assert.equal(await Invoice.countDocuments({}), 3, 'conteo sigue en tres');
+    });
+    check('flujo: cada ticket nuevo encuentra su factura en seguimiento público', async () => {
+      for (const invoice of created) {
+        const response = await fetch(`${base}/diagnostics/track/${invoice.ticketNumber}`);
+        assertStatus(response, 200, 'consultar ticket');
+        const result = await response.json();
+        assert.equal(result.ticketNumber, invoice.ticketNumber);
+        assert.equal(result.invoice?.invoiceNumber, invoice.invoiceNumber);
+      }
     });
     check('flujo: listado paginado y búsqueda devuelven datos actuales', async () => {
-      const listing = await fetch(`${base}/facturas?page=1&limit=2&search=${diagnostic.ticketNumber}`, { headers: auth });
+      const searchResponse = await fetch(`${base}/facturas?page=1&limit=2&search=${created[0].ticketNumber}`, { headers: auth });
+      assertStatus(searchResponse, 200, 'buscar por ticket');
+      const searchData = await searchResponse.json();
+      assert.equal(searchData.total, 1); assert.equal(searchData.items[0].ticketNumber, created[0].ticketNumber);
+      const listing = await fetch(`${base}/facturas?page=1&limit=2`, { headers: auth });
       assertStatus(listing, 200, 'listar facturas');
       const data = await listing.json();
       assert.equal(data.total, 3); assert.equal(data.items.length, 2); assert.equal(data.pages, 2);
@@ -128,7 +159,7 @@ async function run() {
       assertStatus(paid, 200, 'pago recibido');
       const annulled = await fetch(`${base}/facturas/${created[1]._id}`, { method: 'DELETE', headers: auth });
       assertStatus(annulled, 200, 'anular factura');
-      const persisted = await Invoice.find({ diagnosticId: diagnostic._id }).sort({ invoiceNumber: 1 }).lean();
+      const persisted = await Invoice.find({ _id: { $in: created.map(invoice => invoice._id) } }).sort({ invoiceNumber: 1 }).lean();
       assert.equal(persisted.length, 3); assert.equal(persisted[0].status, 'pagada');
       assert.equal(persisted[1].status, 'anulada'); assert.equal(persisted[2].status, 'pendiente');
       assert.deepEqual(persisted.map(invoice => invoice.totalCents), [2300, 575, 805]);
@@ -140,10 +171,10 @@ async function run() {
       assertStatus(await fetch(`${base}/facturas/${created[2]._id}`, { method: 'DELETE', headers: invalid }), 401, 'eliminar con token inválido');
       assertStatus(await fetch(`${base}/facturas`, {
         method: 'POST', headers: { ...invalid, 'Content-Type': 'application/json', 'Idempotency-Key': 'unauthorized-create-01' },
-        body: JSON.stringify({ diagnosticId: diagnostic._id.toString(), items: [{ description: 'No autorizada', quantity: 1, unitPrice: 1 }] })
+        body: JSON.stringify({ ticket: requests[0].ticket, items: [{ description: 'No autorizada', quantity: 1, unitPrice: 1 }] })
       }), 401, 'crear con token inválido');
       assert.equal((await Invoice.findById(created[2]._id)).status, 'pendiente');
-      assert.equal(await Invoice.countDocuments({ diagnosticId: diagnostic._id }), 3, 'el intento no crea factura');
+      assert.equal(await Invoice.countDocuments({}), 3, 'el intento no crea factura');
     });
 
     let passed = 0;

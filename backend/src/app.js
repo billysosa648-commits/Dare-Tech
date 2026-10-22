@@ -42,7 +42,7 @@ app.use(cors({
     return callback(new Error('Origen no permitido'));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key']
 }));
 app.use(hpp());
 app.use(express.json({ limit: '10kb', strict: true }));

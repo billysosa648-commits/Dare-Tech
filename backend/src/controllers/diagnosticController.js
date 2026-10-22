@@ -1,20 +1,12 @@
-const crypto = require('crypto');
 const Diagnostic = require('../models/Diagnostic');
 const Invoice = require('../models/Invoice');
 const { serializeInvoice } = require('./invoiceController');
-
-function generateTicketNumber() {
-  // Mantiene el prefijo existente y evita tickets consecutivos fáciles de enumerar.
-  return `DT-${crypto.randomInt(100000, 10000000000)}`;
-}
+const createTicket = require('../services/ticketService');
 
 async function createDiagnostic(req, res) {
   try {
     const { brand, model, issue, customerName, customerContact } = req.body;
-    const diagnostic = await Diagnostic.create({
-      ticketNumber: generateTicketNumber(), brand, model, issue, customerName, customerContact,
-      statusHistory: [{ status: 'recibido', note: 'Diagnóstico recibido' }]
-    });
+    const diagnostic = await createTicket({ brand, model, issue, customerName, customerContact });
     res.status(201).json(diagnostic);
   } catch (error) {
     if (error.code === 11000) return res.status(409).json({ message: 'No se pudo generar el ticket. Intenta nuevamente.' });
@@ -44,6 +36,24 @@ async function getAllDiagnostics(req, res) {
   } catch (error) {
     console.error('Error al obtener diagnósticos:', error.message);
     res.status(500).json({ message: 'No se pudieron obtener los diagnósticos' });
+  }
+}
+
+async function getReceivedReports(req, res) {
+  try {
+    const page = Number(req.query.page || 1);
+    const limit = Math.min(2, Math.max(1, Number(req.query.limit) || 2));
+    const [reports, total] = await Promise.all([
+      Diagnostic.find().select('-_id ticketNumber brand model issue customerName customerContact status createdAt')
+        .sort({ createdAt: -1, _id: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+      Diagnostic.countDocuments()
+    ]);
+    res.set('Cache-Control', 'no-store, private');
+    res.set('Pragma', 'no-cache');
+    res.json({ items: reports, page, limit, total, pages: Math.ceil(total / limit) });
+  } catch (error) {
+    console.error('Error al obtener reportes recibidos:', error.message);
+    res.status(500).json({ message: 'No se pudieron obtener los reportes' });
   }
 }
 
@@ -81,4 +91,4 @@ async function trackByTicket(req, res) {
   }
 }
 
-module.exports = { createDiagnostic, getAllDiagnostics, updateDiagnosticStatus, trackByTicket };
+module.exports = { createDiagnostic, getAllDiagnostics, getReceivedReports, updateDiagnosticStatus, trackByTicket };

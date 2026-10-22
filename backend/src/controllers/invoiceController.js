@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const Invoice = require('../models/Invoice');
 const Counter = require('../models/Counter');
 const Diagnostic = require('../models/Diagnostic');
+const createTicket = require('../services/ticketService');
 
 const MAX_INVOICE_CENTS = 3_000_000_000;
 
@@ -115,7 +116,9 @@ async function createInvoice(req, res) {
     await session.withTransaction(async () => {
       result = await Invoice.findOne({ idempotencyKey }).session(session);
       if (result) return;
-      const diagnostic = await Diagnostic.findById(req.body.diagnosticId).session(session);
+      const diagnostic = req.body.ticket
+        ? await createTicket(req.body.ticket, session)
+        : await Diagnostic.findById(req.body.diagnosticId).session(session);
       if (!diagnostic) {
         const error = new Error('El diagnóstico no existe');
         error.status = 404;
@@ -188,7 +191,7 @@ async function updateInvoice(req, res) {
 async function listInvoices(req, res) {
   try {
     const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
-    const limit = Math.min(100, Math.max(1, Number.parseInt(req.query.limit, 10) || 20));
+    const limit = Math.min(4, Math.max(1, Number.parseInt(req.query.limit, 10) || 4));
     const filter = {};
     if (req.query.status) filter.status = req.query.status;
     const search = typeof req.query.search === 'string' ? req.query.search.trim().slice(0, 100) : '';
