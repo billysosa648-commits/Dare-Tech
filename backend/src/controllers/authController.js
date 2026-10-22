@@ -1,60 +1,92 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const Admin = require('../models/Admin');
 
-// Crea el usuario administrador (usar solo una vez)
+function matchesSecret(provided, expected) {
+  if (!provided || !expected) return false;
+  const providedBuffer = Buffer.from(provided);
+  const expectedBuffer = Buffer.from(expected);
+  return providedBuffer.length === expectedBuffer.length && crypto.timingSafeEqual(providedBuffer, expectedBuffer);
+}
+
 async function registerAdmin(req, res) {
+  const setupFlags = Admin.db.collection('systemFlags');
+  let ownsBootstrap = false;
   try {
     const { username, password } = req.body;
-
-    if (!username || !password) {
-      return res.status(400).json({ message: 'Usuario y contraseña son obligatorios' });
+    const bootstrapKey = process.env.ADMIN_BOOTSTRAP_KEY;
+    if (!bootstrapKey || Buffer.byteLength(bootstrapKey, 'utf8') < 32 ||
+        !matchesSecret(req.get('x-admin-bootstrap-key'), bootstrapKey)) {
+      return res.status(404).json({ message: 'Ruta no disponible' });
     }
 
-    const existingAdmin = await Admin.findOne({ username });
-    if (existingAdmin) {
-      return res.status(400).json({ message: 'Ese usuario ya existe' });
-    }
+    const claim = await setupFlags.updateOne(
+      { _id: 'admin-bootstrap' },
+      { $setOnInsert: { createdAt: new Date() } },
+      { upsert: true }
+    );
+    if (!claim.upsertedCount) return res.status(409).json({ message: 'El administrador inicial ya fue creado' });
+    ownsBootstrap = true;
+    if (await Admin.exists({})) return res.status(409).json({ message: 'El administrador inicial ya fue creado' });
 
-    const passwordHash = await bcrypt.hash(password, 10);
-
-    const admin = await Admin.create({ username, passwordHash });
-
+    const passwordHash = await bcrypt.hash(password, 12);
+    const admin = await Admin.create({ username, passwordHash, role: 'admin', tokenVersion: 0, passwordChangeRequired: false });
+    ownsBootstrap = false;
     res.status(201).json({ message: 'Administrador creado correctamente', id: admin._id });
   } catch (error) {
-    res.status(500).json({ message: 'Error al crear el administrador', error: error.message });
+    if (error.code === 11000) return res.status(409).json({ message: 'No se pudo crear el administrador' });
+    console.error('Error al crear administrador:', error.message);
+    res.status(500).json({ message: 'No se pudo crear el administrador' });
+  } finally {
+    if (ownsBootstrap) await setupFlags.deleteOne({ _id: 'admin-bootstrap' }).catch(() => {});
   }
 }
 
-// Inicia sesión y devuelve un token JWT
 async function login(req, res) {
   try {
     const { username, password } = req.body;
-
-    if (!username || !password) {
-      return res.status(400).json({ message: 'Usuario y contraseña son obligatorios' });
-    }
-
     const admin = await Admin.findOne({ username });
-    if (!admin) {
+    if (!admin || !(await bcrypt.compare(password, admin.passwordHash))) {
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
-    const passwordMatches = await bcrypt.compare(password, admin.passwordHash);
-    if (!passwordMatches) {
-      return res.status(401).json({ message: 'Credenciales inválidas' });
+    const passwordMeetsPolicy = Array.from(password).length >= 12 && Buffer.byteLength(password, 'utf8') <= 72;
+    if (!passwordMeetsPolicy && !admin.passwordChangeRequired) {
+      admin.passwordChangeRequired = true;
+      await admin.save();
     }
-
     const token = jwt.sign(
-      { id: admin._id, username: admin.username },
+      { id: admin._id.toString(), username: admin.username, role: admin.role || 'admin', tokenVersion: admin.tokenVersion || 0 },
       process.env.JWT_SECRET,
-      { expiresIn: '8h' }
+      { expiresIn: '1h', issuer: 'dare-tech-api', audience: 'dare-tech-admin' }
     );
-
-    res.json({ message: 'Login exitoso', token });
+    res.json({ message: 'Login exitoso', token, expiresIn: 3600, passwordChangeRequired: !passwordMeetsPolicy || admin.passwordChangeRequired });
   } catch (error) {
-    res.status(500).json({ message: 'Error al iniciar sesión', error: error.message });
+    console.error('Error al iniciar sesión:', error.message);
+    res.status(500).json({ message: 'No se pudo iniciar sesión' });
   }
 }
 
-module.exports = { registerAdmin, login };
+async function logout(req, res) {
+  try {
+    await Admin.updateOne({ _id: req.admin.id }, { $inc: { tokenVersion: 1 } });
+    res.status(204).end();
+  } catch (error) {
+    console.error('Error al cerrar sesión:', error.message);
+    res.status(500).json({ message: 'No se pudo cerrar sesión' });
+  }
+}
+
+async function changePassword(req, res) {
+  try {
+    const passwordHash = await bcrypt.hash(req.body.password, 12);
+    await Admin.updateOne({ _id: req.admin.id }, { $set: { passwordHash, passwordChangeRequired: false }, $inc: { tokenVersion: 1 } });
+    res.status(204).end();
+  } catch (error) {
+    console.error('Error al cambiar contraseña:', error.message);
+    res.status(500).json({ message: 'No se pudo actualizar la contraseña' });
+  }
+}
+
+module.exports = { registerAdmin, login, logout, changePassword };

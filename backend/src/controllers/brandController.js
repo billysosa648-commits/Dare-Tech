@@ -6,7 +6,8 @@ async function getBrands(req, res) {
     const brands = await Brand.find().sort({ name: 1 });
     res.json(brands);
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener las marcas', error: error.message });
+    console.error('Error al obtener marcas:', error.message);
+    res.status(500).json({ message: 'No se pudieron obtener las marcas' });
   }
 }
 
