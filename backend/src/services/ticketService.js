@@ -1,7 +1,7 @@
 const Diagnostic = require('../models/Diagnostic');
 const Counter = require('../models/Counter');
 
-async function createTicket(ticketData, session = null) {
+async function createTicket(ticketData, session = null, origin = 'report') {
   const attempts = session ? 1 : 5;
   for (let attempt = 0; attempt < attempts; attempt++) {
     const options = { upsert: true, returnDocument: 'after' };
@@ -17,6 +17,7 @@ async function createTicket(ticketData, session = null) {
       issue: ticketData.issue.trim(),
       customerName: ticketData.customerName.trim(),
       customerContact: ticketData.customerContact.trim(),
+      origin,
       status: 'recibido',
       statusHistory: [{ status: 'recibido', note: 'Diagnóstico recibido' }]
     };

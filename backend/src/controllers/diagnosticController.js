@@ -44,9 +44,9 @@ async function getReceivedReports(req, res) {
     const page = Number(req.query.page || 1);
     const limit = Math.min(2, Math.max(1, Number(req.query.limit) || 2));
     const [reports, total] = await Promise.all([
-      Diagnostic.find().select('-_id ticketNumber brand model issue customerName customerContact status createdAt')
+      Diagnostic.find({ origin: { $ne: 'invoice' } }).select('ticketNumber brand model issue customerName customerContact status createdAt')
         .sort({ createdAt: -1, _id: -1 }).skip((page - 1) * limit).limit(limit).lean(),
-      Diagnostic.countDocuments()
+      Diagnostic.countDocuments({ origin: { $ne: 'invoice' } })
     ]);
     res.set('Cache-Control', 'no-store, private');
     res.set('Pragma', 'no-cache');

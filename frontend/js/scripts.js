@@ -1,10 +1,10 @@
-/* ========================================== */
+
 /* LÓGICA DE INTERACTIVIDAD Y ENVÍO AL BACKEND  */
-/* ========================================== */
+
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    const API_URL = 'http://localhost:4000/api'; // cámbialo cuando subas el backend a producción
+    const API_URL = window.DARE_TECH_API_URL;
 
     let selectedBrand = '';
     let selectedModel = '';
@@ -22,45 +22,90 @@ document.addEventListener('DOMContentLoaded', () => {
     const userNameInput = document.getElementById('user-name');
     const userContactInput = document.getElementById('user-contact');
     const sendBtn = document.getElementById('send-btn');
+    const diagnosticForm = document.getElementById('diagnostic-form');
+    const brandLoadStatus = document.getElementById('brand-load-status');
+    const resultPanel = document.getElementById('report-result');
+    const resultIcon = resultPanel?.querySelector('.report-result__icon');
+    const resultTitle = resultPanel?.querySelector('.report-result__title');
+    const resultMessage = resultPanel?.querySelector('.report-result__message');
+    const resultTicket = resultPanel?.querySelector('.report-result__ticket');
+    const resultClose = resultPanel?.querySelector('.report-result__close');
 
-    // Función que inicializa y pinta los botones de las marcas en el Paso 1
+    function showResult(state, title, message, ticket = '') {
+        if (!resultPanel) return;
+        resultPanel.hidden = false;
+        resultPanel.dataset.state = state;
+        resultPanel.setAttribute('role', state === 'error' ? 'alert' : 'status');
+        resultIcon.textContent = state === 'loading' ? '' : state === 'success' ? '✓' : '×';
+        resultTitle.textContent = title;
+        resultMessage.textContent = message;
+        resultTicket.textContent = ticket ? `Número de ticket: ${ticket}` : '';
+        resultTicket.hidden = !ticket;
+        resultClose.hidden = state === 'loading';
+        resultPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    resultClose?.addEventListener('click', () => { resultPanel.hidden = true; });
+
+    // Función que inicializa y pinta los botones de las marcas 
     async function initBrands() {
         if (!brandContainer) return;
+        brandLoadStatus.textContent = 'Cargando marcas...';
         try {
             const response = await fetch(`${API_URL}/brands`);
-            brandsFromDB = await response.json();
+            if (!response.ok) throw new Error('brands-unavailable');
+            const result = await response.json();
+            if (!Array.isArray(result) || result.some(brand => !brand || typeof brand.name !== 'string')) {
+                throw new Error('brands-invalid');
+            }
+            brandsFromDB = result;
 
-            brandContainer.innerHTML = '';
+            brandContainer.replaceChildren();
             brandsFromDB.forEach(brand => {
                 const btn = document.createElement('button');
                 btn.type = 'button';
-                btn.className = 'term-btn px-4 py-2 border border-[#00f3ff]/40 bg-[#05080c] text-slate-400 text-sm rounded hover:border-[#00f3ff] hover:text-[#00f3ff] transition-all';
+                btn.className = 'term-btn';
+                btn.setAttribute('aria-pressed', 'false');
                 btn.textContent = `[${brand.name}]`;
                 btn.addEventListener('click', () => selectBrand(brand, btn));
                 brandContainer.appendChild(btn);
             });
+            brandLoadStatus.textContent = brandsFromDB.length ? '' : 'No hay marcas disponibles en este momento.';
+            brandLoadStatus.hidden = brandsFromDB.length > 0;
         } catch (error) {
             console.error('Error al cargar las marcas:', error);
+            brandLoadStatus.textContent = 'No se pudieron cargar las marcas. Verifica la conexión y vuelve a intentarlo.';
+            brandLoadStatus.hidden = false;
+            brandLoadStatus.querySelector('.brand-retry')?.remove();
+            const retry = document.createElement('button');
+            retry.type = 'button';
+            retry.className = 'brand-retry';
+            retry.textContent = 'Reintentar';
+            retry.addEventListener('click', initBrands);
+            brandLoadStatus.append(' ');
+            brandLoadStatus.appendChild(retry);
         }
     }
 
-    // Maneja la lógica de selección visual y despliegue del Paso 2 según la marca elegida
+    // Maneja la lógica de selección visual y despliegue 
     function selectBrand(brand, btnElement) {
         document.querySelectorAll('#brand-buttons button').forEach(b => {
-            b.classList.remove('bg-[#00f3ff]/15', 'border-[#00f3ff]', 'text-[#00f3ff]', 'font-bold');
+            b.classList.remove('is-selected');
+            b.setAttribute('aria-pressed', 'false');
         });
-        btnElement.classList.add('bg-[#00f3ff]/15', 'border-[#00f3ff]', 'text-[#00f3ff]', 'font-bold');
+        btnElement.classList.add('is-selected');
+        btnElement.setAttribute('aria-pressed', 'true');
 
         selectedBrand = brand.name;
         selectedModel = '';
-        otherModelContainer.classList.add('hidden');
+        otherModelContainer.classList.add('is-hidden');
         customModelInput.value = '';
 
         if (brand.name === 'Otro') {
-            otherBrandContainer.classList.remove('hidden');
-            stepModel.classList.add('hidden');
+            otherBrandContainer.classList.remove('is-hidden');
+            stepModel.classList.add('is-hidden');
         } else {
-            otherBrandContainer.classList.add('hidden');
+            otherBrandContainer.classList.add('is-hidden');
             customBrandInput.value = '';
             renderModels(brand.models);
         }
@@ -69,13 +114,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Genera dinámicamente los botones de modelos correspondientes a la marca seleccionada
     function renderModels(models) {
         if (!modelContainer) return;
-        modelContainer.innerHTML = '';
-        stepModel.classList.remove('hidden');
+        modelContainer.replaceChildren();
+        stepModel.classList.remove('is-hidden');
 
         (models || []).concat('Otro Modelo').forEach(model => {
             const btn = document.createElement('button');
             btn.type = 'button';
-            btn.className = 'term-btn px-4 py-2 border border-[#00f3ff]/40 bg-[#05080c] text-slate-400 text-sm rounded hover:border-[#00f3ff] hover:text-[#00f3ff] transition-all';
+            btn.className = 'term-btn';
+                btn.setAttribute('aria-pressed', 'false');
             btn.textContent = `[${model}]`;
             btn.addEventListener('click', () => selectModel(model, btn));
             modelContainer.appendChild(btn);
@@ -85,23 +131,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // Gestiona la selección del modelo específico
     function selectModel(model, btnElement) {
         document.querySelectorAll('#model-buttons button').forEach(b => {
-            b.classList.remove('bg-[#00f3ff]/15', 'border-[#00f3ff]', 'text-[#00f3ff]', 'font-bold');
+            b.classList.remove('is-selected');
+            b.setAttribute('aria-pressed', 'false');
         });
-        btnElement.classList.add('bg-[#00f3ff]/15', 'border-[#00f3ff]', 'text-[#00f3ff]', 'font-bold');
+        btnElement.classList.add('is-selected');
+        btnElement.setAttribute('aria-pressed', 'true');
 
         selectedModel = model;
 
         if (model === 'Otro Modelo') {
-            otherModelContainer.classList.remove('hidden');
+            otherModelContainer.classList.remove('is-hidden');
         } else {
-            otherModelContainer.classList.add('hidden');
+            otherModelContainer.classList.add('is-hidden');
             customModelInput.value = '';
         }
     }
 
     // Evento de clic en el botón de envío del formulario de diagnóstico
-    if (sendBtn) {
-        sendBtn.addEventListener('click', async () => {
+    if (diagnosticForm && sendBtn) {
+        diagnosticForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
             let finalBrand = selectedBrand === 'Otro' ? (customBrandInput.value.trim() || 'No especificada') : selectedBrand;
             let finalModel = selectedModel === 'Otro Modelo' ? (customModelInput.value.trim() || 'No especificado') : selectedModel;
 
@@ -116,9 +165,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!contact) return alert('Por favor ingresa tu contacto.');
 
             // Cambiar texto del botón a estado de carga
-            const originalText = sendBtn.innerHTML;
-            sendBtn.innerHTML = '[ ENVIANDO REPORTE... ]';
+            const originalText = sendBtn.textContent;
+            sendBtn.textContent = '[ ENVIANDO REPORTE... ]';
             sendBtn.disabled = true;
+            showResult('loading', 'Enviando reporte', 'Estamos registrando tu solicitud.');
 
             try {
                 const response = await fetch(`${API_URL}/diagnostics`, {
@@ -134,11 +184,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (!response.ok) {
-                    throw new Error('El servidor respondió con un error');
+                    const error = new Error('request-failed');
+                    error.status = response.status;
+                    throw error;
                 }
 
                 const data = await response.json();
-                alert(`¡Diagnóstico enviado con éxito! Tu número de ticket es: ${data.ticketNumber}`);
+                showResult('success', 'Reporte enviado correctamente', 'Se ha enviado el reporte de manera correcta. Nos pondremos en contacto en breve.', data.ticketNumber || '');
 
                 // Limpieza total del formulario después de un envío exitoso
                 issueInput.value = '';
@@ -148,18 +200,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 customModelInput.value = '';
                 selectedBrand = '';
                 selectedModel = '';
-                stepModel.classList.add('hidden');
-                otherBrandContainer.classList.add('hidden');
-                otherModelContainer.classList.add('hidden');
+                stepModel.classList.add('is-hidden');
+                otherBrandContainer.classList.add('is-hidden');
+                otherModelContainer.classList.add('is-hidden');
                 document.querySelectorAll('#brand-buttons button, #model-buttons button').forEach(b => {
-                    b.classList.remove('bg-[#00f3ff]/15', 'border-[#00f3ff]', 'text-[#00f3ff]', 'font-bold');
+                    b.classList.remove('is-selected');
+                    b.setAttribute('aria-pressed', 'false');
                 });
 
             } catch (error) {
-                alert('Hubo un problema de conexión. Por favor intenta más tarde.');
+                let reason = 'No se pudo guardar el reporte. Intenta nuevamente en unos minutos.';
+                if (error.status === 400) reason = 'Revisa los datos ingresados: hay un campo inválido o incompleto.';
+                else if (error.status === 413) reason = 'El reporte supera el tamaño permitido. Reduce la descripción e inténtalo de nuevo.';
+                else if (error.status === 429) reason = 'Se recibieron demasiados intentos. Espera unos minutos antes de volver a enviar.';
+                else if (!error.status) reason = 'No se pudo conectar con el servicio. Revisa tu conexión e inténtalo nuevamente.';
+                showResult('error', 'No se pudo enviar el reporte', reason);
             } finally {
                 // Restaurar el estado original del botón
-                sendBtn.innerHTML = originalText;
+                sendBtn.textContent = originalText;
                 sendBtn.disabled = false;
             }
         });

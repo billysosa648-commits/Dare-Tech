@@ -1,70 +1,170 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Panel Admin - Dare-Tech</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="stylesheet.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#0a0e14">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self' http://localhost:4000 http://127.0.0.1:4000; object-src 'none'; base-uri 'self'; form-action 'self'">
+    <title>Panel Admin - Dare-Tech</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/tailwind.css">
+    <link rel="stylesheet" href="css/stylesheet.css">
 </head>
-<body class="bg-[#0a0e14] text-slate-300 min-h-screen p-6">
+<body class="admin-page">
+  <a class="skip-link" href="#main-content">Saltar al contenido</a>
 
-  <!-- ============ PANTALLA DE LOGIN ============ -->
-  <div id="login-screen" class="max-w-sm mx-auto mt-20">
-    <h1 class="text-2xl font-bold text-[#00f3ff] glow-cyan mb-6 text-center">[ ACCESO ADMIN ]</h1>
-    <div class="bg-[#0d1117] border border-[#00f3ff]/20 rounded p-6">
-      <label class="block text-sm text-slate-400 mb-1">Usuario</label>
-      <input id="login-username" type="text" class="w-full bg-[#05080c] border border-[#00f3ff]/40 rounded px-3 py-2 mb-4 focus:outline-none focus:border-[#00f3ff]">
+  <main id="main-content">
+  <!--  PANTALLA DE LOGIN  -->
+  <section id="login-screen" class="admin-screen admin-screen--login" aria-labelledby="login-title">
+    <h1 id="login-title" class="admin-screen__title admin-screen__title--centered">[ ACCESO ADMIN ]</h1>
+    <form id="login-form" class="admin-auth-card" novalidate>
+      <label for="login-username" class="admin-field__label">Usuario</label>
+      <input id="login-username" type="text" autocomplete="username" maxlength="40" class="admin-field__input">
 
-      <label class="block text-sm text-slate-400 mb-1">Contraseña</label>
-      <input id="login-password" type="password" class="w-full bg-[#05080c] border border-[#00f3ff]/40 rounded px-3 py-2 mb-4 focus:outline-none focus:border-[#00f3ff]">
+      <label for="login-password" class="admin-field__label">Contraseña</label>
+      <input id="login-password" type="password" autocomplete="current-password" maxlength="72" class="admin-field__input">
 
-      <button id="login-btn" class="w-full py-2 border border-[#00f3ff]/40 bg-[#05080c] text-[#00f3ff] rounded hover:bg-[#00f3ff]/15 hover:border-[#00f3ff] transition-all">
+      <button id="login-btn" type="submit" class="button button--primary admin-auth__submit">
         [ INGRESAR ]
       </button>
-      <p id="login-error" class="text-red-400 text-sm mt-3 hidden"></p>
-    </div>
-  </div>
+      <p id="login-error" class="admin-message admin-message--error is-hidden" role="alert"></p>
+    </form>
+  </section>
 
-  <!-- ============ PANEL (oculto hasta hacer login) ============ -->
-  <div id="panel-screen" class="hidden max-w-6xl mx-auto">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold text-[#00f3ff] glow-cyan">[ PANEL DE DIAGNÓSTICOS ]</h1>
-      <button id="logout-btn" class="px-4 py-2 border border-red-400/40 text-red-400 rounded hover:bg-red-400/10 transition-all text-sm">
-        [ CERRAR SESIÓN ]
-      </button>
-    </div>
+  <section id="password-change-screen" class="admin-screen admin-screen--password is-hidden" aria-labelledby="password-change-title">
+    <h1 id="password-change-title" class="admin-screen__title admin-screen__title--centered">[ ACTUALIZA TU CONTRASEÑA ]</h1>
+    <form id="password-change-form" class="admin-auth-card" novalidate>
+      <label for="new-password" class="admin-field__label">Nueva contraseña (12 caracteres mínimo)</label>
+      <input id="new-password" type="password" autocomplete="new-password" minlength="12" maxlength="72" class="admin-field__input">
+      <button id="change-password-btn" type="submit" class="button button--primary admin-auth__submit">[ ACTUALIZAR ]</button>
+      <p id="password-change-error" class="admin-message admin-message--error is-hidden" role="alert"></p>
+    </form>
+  </section>
 
-    <div class="bg-[#0d1117] border border-[#00f3ff]/20 rounded overflow-x-auto">
-      <table class="w-full text-sm">
-        <thead class="bg-[#05080c] text-slate-400 text-left">
-          <tr>
-            <th class="p-3">Ticket</th>
-            <th class="p-3">Cliente</th>
-            <th class="p-3">Equipo</th>
-            <th class="p-3">Falla</th>
-            <th class="p-3">Estado</th>
-            <th class="p-3">Factura</th>
-          </tr>
-        </thead>
-        <tbody id="diagnostics-tbody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ============ MODAL: CREAR FACTURA ============ -->
-  <div id="invoice-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center p-4">
-    <div class="bg-[#0d1117] border border-[#00f3ff]/40 rounded p-6 w-full max-w-md">
-      <h2 class="text-lg font-bold text-[#00f3ff] mb-4">[ CREAR FACTURA — <span id="modal-ticket"></span> ]</h2>
-      <div id="modal-items"></div>
-      <button id="add-item-btn" class="text-sm text-[#00f3ff] mb-4">+ Agregar ítem</button>
-      <div class="flex gap-2">
-        <button id="modal-save-btn" class="flex-1 py-2 border border-[#00f3ff]/40 bg-[#05080c] text-[#00f3ff] rounded hover:bg-[#00f3ff]/15">[ GUARDAR ]</button>
-        <button id="modal-cancel-btn" class="flex-1 py-2 border border-slate-500/40 text-slate-400 rounded hover:bg-slate-500/10">[ CANCELAR ]</button>
+  <!--  PANEL (oculto hasta hacer login)  -->
+  <section id="panel-screen" class="admin-panel is-hidden" aria-labelledby="admin-panel-title">
+    <header class="admin-panel__toolbar">
+      <h1 id="admin-panel-title" class="admin-panel__title">[ PANEL DE ADMINISTRACIÓN ]</h1>
+      <div class="admin-panel__actions">
+        <button id="create-invoice-top-btn" type="button" class="invoice-create-button">
+          + Crear factura
+        </button>
+        <button id="logout-btn" type="button" class="button button--danger">
+          [ CERRAR SESIÓN ]
+        </button>
       </div>
-    </div>
+    </header>
+
+    <section class="invoice-section" aria-labelledby="reports-heading">
+      <div class="invoice-toolbar">
+        <h2 id="reports-heading" class="section-title section-title--cyan">Reportes recibidos</h2>
+        <button id="reports-refresh-btn" type="button" class="invoice-action">Actualizar</button>
+      </div>
+      <p id="reports-list-status" class="invoice-list-status" role="status" aria-live="polite"></p>
+      <div id="reports-list" class="reports-list"></div>
+      <nav id="reports-pagination" class="invoice-pagination is-hidden" aria-label="Paginación de reportes">
+        <button id="reports-prev" type="button" class="invoice-action">Anterior</button>
+        <span id="reports-page-label"></span>
+        <button id="reports-next" type="button" class="invoice-action">Siguiente</button>
+      </nav>
+    </section>
+
+    <section class="invoice-section" aria-labelledby="invoices-heading">
+      <div class="invoice-toolbar">
+        <h2 id="invoices-heading" class="section-title section-title--cyan">Facturas</h2>
+        <div class="invoice-filters">
+          <label class="visually-hidden" for="invoice-search">Buscar factura</label>
+          <input id="invoice-search" type="search" maxlength="100" placeholder="Buscar número, cliente o ticket" class="invoice-filter-input">
+          <label class="visually-hidden" for="invoice-status-filter">Filtrar por estado</label>
+          <select id="invoice-status-filter" class="invoice-filter-input">
+            <option value="">Todos los estados</option><option value="pendiente">Pendientes</option><option value="pagada">Pagadas</option><option value="anulada">Anuladas</option>
+          </select>
+        </div>
+      </div>
+      <p id="invoice-list-status" class="invoice-list-status" role="status" aria-live="polite"></p>
+      <div id="invoice-list" class="invoice-list"></div>
+      <nav id="invoice-pagination" class="invoice-pagination" aria-label="Paginación de facturas">
+        <button id="invoice-prev" type="button" class="invoice-action">Anterior</button>
+        <span id="invoice-page-label"></span>
+        <button id="invoice-next" type="button" class="invoice-action">Siguiente</button>
+      </nav>
+    </section>
+  </section>
+  </main>
+  <!--  MODAL: CREAR FACTURA  -->
+  <div id="invoice-modal" class="admin-modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="invoice-modal-title">
+    <form id="invoice-create-form" class="invoice-dialog invoice-dialog--form" novalidate>
+      <h2 id="invoice-modal-title" class="invoice-dialog__title">[ CREAR FACTURA ]</h2>
+      <fieldset class="invoice-ticket-fields">
+        <legend class="visually-hidden">Datos del nuevo ticket</legend>
+        <label for="invoice-ticket-customer">Nombre del cliente</label>
+        <input id="invoice-ticket-customer" type="text" maxlength="120" autocomplete="name" required>
+        <label for="invoice-ticket-contact">Contacto</label>
+        <input id="invoice-ticket-contact" type="tel" maxlength="120" autocomplete="tel" required>
+        <label for="invoice-ticket-brand">Marca</label>
+        <input id="invoice-ticket-brand" type="text" maxlength="80" required>
+        <label for="invoice-ticket-model">Modelo (opcional)</label>
+        <input id="invoice-ticket-model" type="text" maxlength="100">
+        <label for="invoice-ticket-issue">Falla reportada</label>
+        <textarea id="invoice-ticket-issue" maxlength="1500" rows="2" required></textarea>
+      </fieldset>
+      <p id="invoice-availability-message" class="invoice-availability is-hidden" role="status"></p>
+      <div class="invoice-item-heading"><span>Descripción</span><span>Cant.</span><span>Precio unitario</span><span></span></div>
+      <div id="modal-items"></div>
+      <template id="invoice-item-template">
+        <div class="item-row">
+          <input type="text" aria-label="Descripción del ítem" placeholder="Descripción" maxlength="200" class="item-desc">
+          <input type="number" aria-label="Cantidad" value="1" min="1" max="1000" step="1" class="item-quantity">
+          <input type="number" aria-label="Precio unitario" placeholder="0.00" min="0.01" max="1000000" step="0.01" class="item-price">
+          <button class="remove-item-btn" type="button" aria-label="Eliminar este ítem" title="Eliminar este ítem">×</button>
+        </div>
+      </template>
+      <button id="add-item-btn" type="button" class="invoice-add-item">+ Agregar ítem</button>
+      <div class="invoice-calculation">
+        <label for="invoice-discount">Descuento ($)</label><input id="invoice-discount" type="number" min="0" step="0.01" value="0">
+        <span>Subtotal</span><output id="invoice-subtotal">$0.00</output>
+        <span>IVA (<span id="invoice-iva-rate">15</span>%)</span><output id="invoice-iva">$0.00</output>
+        <strong>Total</strong><output id="invoice-total">$0.00</output>
+      </div>
+      <label for="invoice-notes" class="invoice-notes-label">Notas (opcional)</label>
+      <textarea id="invoice-notes" maxlength="1000" rows="2" class="invoice-notes"></textarea>
+      <div class="invoice-form-actions">
+        <button id="modal-save-btn" type="submit" class="button button--primary invoice-form-actions__save">[ GUARDAR ]</button>
+        <button id="modal-cancel-btn" type="button" class="button button--secondary invoice-form-actions__cancel">[ CANCELAR ]</button>
+      </div>
+    </form>
   </div>
 
-<script src="/js/admin.js"></script>
+  <div id="invoice-customer-modal" class="admin-modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="invoice-customer-title">
+    <form id="invoice-customer-form" class="invoice-customer-card">
+      <h2 id="invoice-customer-title">[ CAMBIAR CLIENTE ]</h2>
+      <label for="invoice-customer-name">Nombre del cliente</label>
+      <input id="invoice-customer-name" type="text" maxlength="120" autocomplete="name" required>
+      <p id="invoice-customer-error" class="invoice-customer-error" role="alert"></p>
+      <div class="invoice-detail-actions">
+        <button id="invoice-customer-save" type="submit" class="invoice-action">Guardar</button>
+        <button id="invoice-customer-cancel" type="button" class="invoice-action">Cancelar</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="invoice-detail-modal" class="admin-modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="invoice-detail-title">
+    <article class="invoice-detail-card">
+      <div id="invoice-print-area">
+        <h2 id="invoice-detail-title">Factura</h2>
+        <div id="invoice-detail-content"></div>
+      </div>
+      <div class="invoice-detail-actions">
+        <button id="invoice-print-btn" type="button" class="invoice-action">Imprimir</button>
+        <button id="invoice-detail-close" type="button" class="invoice-action">Cerrar</button>
+      </div>
+    </article>
+  </div>
+
+    <script src="js/common.js" defer></script>
+    <script src="js/admin.js" defer></script>
 </body>
 </html>

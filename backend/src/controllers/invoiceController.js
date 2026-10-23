@@ -117,7 +117,7 @@ async function createInvoice(req, res) {
       result = await Invoice.findOne({ idempotencyKey }).session(session);
       if (result) return;
       const diagnostic = req.body.ticket
-        ? await createTicket(req.body.ticket, session)
+        ? await createTicket(req.body.ticket, session, 'invoice')
         : await Diagnostic.findById(req.body.diagnosticId).session(session);
       if (!diagnostic) {
         const error = new Error('El diagnóstico no existe');

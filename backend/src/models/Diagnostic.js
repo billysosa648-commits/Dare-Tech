@@ -11,6 +11,7 @@ const diagnosticSchema = new mongoose.Schema({
   issue: { type: String, required: true },
   customerName: { type: String, required: true },
   customerContact: { type: String, required: true },
+  origin: { type: String, enum: ['report', 'invoice'], default: 'report', index: true },
   status: {
     type: String,
     enum: ['recibido', 'en_revision', 'reparado', 'entregado'],
