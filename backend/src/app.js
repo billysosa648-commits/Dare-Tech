@@ -14,8 +14,9 @@ const authRoutes = require('./routes/authRoutes');
 
 const invoiceRoutes = require('./routes/invoiceRoutes');
 
-const allowedOrigins = (process.env.FRONTEND_ORIGINS || 'http://localhost:5500,http://127.0.0.1:5500,http://localhost:5501,http://127.0.0.1:5501')
+const configuredOrigins = (process.env.FRONTEND_ORIGINS || 'http://localhost:5500,http://127.0.0.1:5500,http://localhost:5501,http://127.0.0.1:5501')
   .split(',').map(origin => origin.trim()).filter(Boolean);
+const allowedOrigins = new Set([...configuredOrigins, 'https://dare-tech.billysosa648.workers.dev']);
 
 app.disable('x-powered-by');
 app.use(helmet({
@@ -30,7 +31,7 @@ app.use(helmet({
 }));
 app.use(cors({
   origin(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
     if (process.env.NODE_ENV !== 'production' && origin) {
       try {
         const parsedOrigin = new URL(origin);
