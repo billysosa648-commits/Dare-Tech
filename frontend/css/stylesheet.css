@@ -354,7 +354,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .diagnostic-options .term-btn:focus-visible { outline: 2px solid var(--green-accent); outline-offset: 3px; }
 .value-card__description { margin: 0; color: #94a3b8; font-size: .75rem; }
 
-/* P�gina de seguimiento */
+/* Página de seguimiento */
 .tracking-page { display: flex; min-height: 100vh; align-items: center; justify-content: center; background: #0a0e14; padding: 1.5rem; color: #cbd5e1; }
 .tracking-page__main { width: 100%; max-width: 42rem; }
 .tracking-page__title { margin: 0 0 1.5rem; color: var(--cyan-glow); text-align: center; font-size: 1.5rem; font-weight: 700; }

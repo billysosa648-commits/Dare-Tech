@@ -1,0 +1,12 @@
+/* Da una presentación provisional coherente con el tema terminal de Dare-Tech. */
+.react-admin-scaffold { min-height: 100vh; padding: 1.25rem clamp(1rem, 4vw, 4rem) 4rem; color: #e2e8f0; }
+.react-admin-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-bottom: 1px solid rgb(0 243 255 / 22%); padding: .75rem 0 1.25rem; }
+.react-admin-header__brand { color: var(--cyan-glow); font-weight: 700; text-decoration: none; }
+.react-admin-header__brand span { color: var(--green-accent); }
+.react-admin-header__label, .react-admin-scaffold__eyebrow { color: #9db3b8; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; }
+.react-admin-scaffold__panel { width: min(100%, 54rem); margin: clamp(3rem, 10vh, 7rem) auto 0; border: 1px solid rgb(0 243 255 / 25%); background: linear-gradient(145deg, rgb(13 17 23 / 95%), rgb(10 14 20 / 96%)); padding: clamp(1.5rem, 5vw, 3rem); }
+.react-admin-scaffold__panel h1 { margin: .75rem 0 1rem; color: var(--cyan-glow); font-size: clamp(1.5rem, 4vw, 2.5rem); line-height: 1.2; }
+.react-admin-scaffold__panel p { max-width: 65ch; }
+.react-admin-scaffold__panel a { color: var(--green-accent); text-underline-offset: .2em; }
+.react-admin-scaffold a:focus-visible { outline: 2px solid var(--green-accent); outline-offset: 4px; }
+@media (prefers-reduced-motion: reduce) { .react-admin-scaffold *, .react-admin-scaffold *::before, .react-admin-scaffold *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }

@@ -1,0 +1,9 @@
+{
+  // Configura el Worker que entrega los archivos generados por Vite.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "dare-tech",
+  "compatibility_date": "2026-11-16",
+  "assets": {
+    "directory": "./dist"
+  }
+}

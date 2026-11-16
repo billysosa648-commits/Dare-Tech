@@ -1,11 +1,24 @@
 {
   "name": "dare-tech-frontend-assets",
   "private": true,
+  "type": "module",
   "scripts": {
-    "build:css": "tailwindcss -i ./css/tailwind.input.css -o ./css/tailwind.css --minify"
+    "build:css": "tailwindcss -i ./css/tailwind.input.css -o ./css/tailwind.css --minify",
+    "dev": "vite",
+    "build": "npm run build:css && vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build && wrangler deploy"
   },
   "devDependencies": {
     "@tailwindcss/cli": "4.3.0",
-    "tailwindcss": "4.3.3"
-  }
+    "@vitejs/plugin-react": "^6.3.0",
+    "tailwindcss": "4.3.3",
+    "vite": "^8.3.8",
+    "wrangler": "^4.163.0"
+  },
+  "dependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "engines": { "node": ">=22.12.0" }
 }
