@@ -5,9 +5,12 @@ const {
   createInvoice, updateInvoice, listInvoices, getInvoiceById, getInvoiceByDiagnostic,
   updateInvoiceStatus, markInvoiceAsPaid, annulInvoice
 } = require('../controllers/invoiceController');
+const { deleteInvoice, bulkDeleteInvoices } = require('../controllers/deletionController');
 const protect = require('../middlewares/authMiddleware');
 const { validate, onlyBodyFields } = require('../middlewares/validation');
+const adminRateLimiter = require('../middlewares/adminRateLimiter');
 
+// Valida el contenido y los importes de cada línea de factura.
 const itemList = body('items').isArray({ min: 1, max: 30 }).bail().custom(items => items.every(item => {
   if (!item || typeof item !== 'object' || Array.isArray(item)) return false;
   if (Object.keys(item).some(key => !['description', 'quantity', 'unitPrice', 'price'].includes(key))) return false;
@@ -20,6 +23,7 @@ const itemList = body('items').isArray({ min: 1, max: 30 }).bail().custom(items 
     Math.abs(amount * 100 - Math.round(amount * 100)) < 0.00001;
 })).withMessage('Los ítems deben incluir descripción, cantidad válida y precio con máximo dos decimales');
 
+// Valida la asociación opcional a un diagnóstico o los datos de un ticket nuevo.
 const diagnosticId = body('diagnosticId').optional().isMongoId();
 const ticketData = body('ticket').custom((ticket, { req }) => {
   if (req.body.diagnosticId !== undefined) return ticket === undefined;
@@ -30,6 +34,7 @@ const ticketData = body('ticket').custom((ticket, { req }) => {
     text(ticket.brand, 80) && (ticket.model === undefined || (typeof ticket.model === 'string' && ticket.model.trim().length <= 100)) &&
     text(ticket.issue, 1500) && text(ticket.customerName, 120) && text(ticket.customerContact, 120);
 }).withMessage('Los datos del ticket son obligatorios y deben ser válidos');
+// Define campos complementarios e idempotencia para crear o editar facturas.
 const optionalNotes = body('notes').optional().isString().trim().isLength({ max: 1000 });
 const optionalDiscount = body('discountCents').optional().isInt({ min: 0, max: 3000000000 }).toInt();
 const invoiceId = param('id').isMongoId();
@@ -39,7 +44,8 @@ const idempotencyHeader = header('idempotency-key').custom((value, { req }) => {
   return typeof value === 'string' && /^[\w-]{8,80}$/.test(value);
 }).withMessage('Falta una clave de idempotencia válida');
 
-router.use(protect);
+// Protege y limita el conjunto de operaciones administrativas de facturas.
+router.use(protect, adminRateLimiter);
 
 router.get('/',
   query('page').optional().isInt({ min: 1, max: 1000000 }).toInt(),
@@ -49,6 +55,8 @@ router.get('/',
 router.post('/', onlyBodyFields(['diagnosticId', 'ticket', 'items', 'discountCents', 'notes']),
   diagnosticId, ticketData, itemList, optionalDiscount, optionalNotes,
   idempotencyHeader, validate, createInvoice);
+// Elimina un lote acotado de facturas por identificadores Mongo válidos.
+router.post('/bulk-delete', onlyBodyFields(['ids']), body('ids').isArray({ min: 1, max: 100 }), body('ids.*').isMongoId(), validate, bulkDeleteInvoices);
 router.get('/diagnostic/:diagnosticId', param('diagnosticId').isMongoId(), validate, getInvoiceByDiagnostic);
 router.get('/:id', invoiceId, validate, getInvoiceById);
 router.put('/:id', invoiceId, onlyBodyFields(['items', 'discountCents', 'notes']), itemList,
@@ -59,6 +67,9 @@ router.patch('/:id', invoiceId, onlyBodyFields(['status', 'paymentMethod', 'note
   body('notes').optional().isString().trim().isLength({ max: 1000 }),
   body('customerName').optional().isString().trim().isLength({ min: 1, max: 120 }), validate, updateInvoiceStatus);
 router.patch('/:id/pay', invoiceId, validate, markInvoiceAsPaid);
-router.delete('/:id', invoiceId, validate, annulInvoice);
+// Anula una factura y conserva su rastro contable sin eliminarla.
+router.patch('/:id/annul', invoiceId, validate, annulInvoice);
+// Ejecuta borrado definitivo; la anulación se conserva por PATCH de estado.
+router.delete('/:id', invoiceId, validate, deleteInvoice);
 
 module.exports = router;

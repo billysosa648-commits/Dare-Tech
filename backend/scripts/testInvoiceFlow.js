@@ -157,7 +157,8 @@ async function run() {
         method: 'PATCH', headers: jsonHeaders, body: JSON.stringify({ status: 'pagada' })
       });
       assertStatus(paid, 200, 'pago recibido');
-      const annulled = await fetch(`${base}/facturas/${created[1]._id}`, { method: 'DELETE', headers: auth });
+      // La anulación contable conserva su ruta dedicada después de reservar DELETE para borrar.
+      const annulled = await fetch(`${base}/facturas/${created[1]._id}/annul`, { method: 'PATCH', headers: auth });
       assertStatus(annulled, 200, 'anular factura');
       const persisted = await Invoice.find({ _id: { $in: created.map(invoice => invoice._id) } }).sort({ invoiceNumber: 1 }).lean();
       assert.equal(persisted.length, 3); assert.equal(persisted[0].status, 'pagada');

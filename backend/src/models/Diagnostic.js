@@ -11,6 +11,10 @@ const diagnosticSchema = new mongoose.Schema({
   issue: { type: String, required: true },
   customerName: { type: String, required: true },
   customerContact: { type: String, required: true },
+  // Huellas no reversibles para deduplicar reportes sin guardar el contacto en texto dentro de los índices.
+  contactHash: { type: String, select: false },
+  // Huella del mismo problema para evitar tickets repetidos durante la ventana configurada.
+  spamHash: { type: String, select: false },
   origin: { type: String, enum: ['report', 'invoice'], default: 'report', index: true },
   status: {
     type: String,
@@ -25,5 +29,9 @@ const diagnosticSchema = new mongoose.Schema({
     }
   ]
 }, { timestamps: true });
+
+// Acelera los conteos diarios por contacto y la búsqueda de duplicados recientes.
+diagnosticSchema.index({ contactHash: 1, createdAt: -1 });
+diagnosticSchema.index({ spamHash: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Diagnostic', diagnosticSchema);

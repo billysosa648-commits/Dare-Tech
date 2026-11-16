@@ -23,6 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const userContactInput = document.getElementById('user-contact');
     const sendBtn = document.getElementById('send-btn');
     const diagnosticForm = document.getElementById('diagnostic-form');
+    const honeypotInput = document.getElementById('website-field');
+    const formStartedAtInput = document.getElementById('form-started-at');
     const brandLoadStatus = document.getElementById('brand-load-status');
     const resultPanel = document.getElementById('report-result');
     const resultIcon = resultPanel?.querySelector('.report-result__icon');
@@ -30,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultMessage = resultPanel?.querySelector('.report-result__message');
     const resultTicket = resultPanel?.querySelector('.report-result__ticket');
     const resultClose = resultPanel?.querySelector('.report-result__close');
+    formStartedAtInput.value = String(Date.now());
 
     function showResult(state, title, message, ticket = '') {
         if (!resultPanel) return;
@@ -171,6 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showResult('loading', 'Enviando reporte', 'Estamos registrando tu solicitud.');
 
             try {
+                const turnstileToken = await window.DARE_TECH_TURNSTILE.getResponse();
                 const response = await fetch(`${API_URL}/diagnostics`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -179,7 +183,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         model: finalModel,
                         issue: issue,
                         customerName: name,
-                        customerContact: contact
+                        customerContact: contact,
+                        website: honeypotInput.value,
+                        formStartedAt: formStartedAtInput.value,
+                        turnstileToken
                     })
                 });
 
@@ -198,6 +205,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 userContactInput.value = '';
                 customBrandInput.value = '';
                 customModelInput.value = '';
+                honeypotInput.value = '';
+                formStartedAtInput.value = String(Date.now());
+                await window.DARE_TECH_TURNSTILE.reset();
                 selectedBrand = '';
                 selectedModel = '';
                 stepModel.classList.add('is-hidden');
@@ -209,12 +219,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
             } catch (error) {
-                let reason = 'No se pudo guardar el reporte. Intenta nuevamente en unos minutos.';
+                let reason = error.message || 'No se pudo guardar el reporte. Intenta nuevamente en unos minutos.';
                 if (error.status === 400) reason = 'Revisa los datos ingresados: hay un campo inválido o incompleto.';
                 else if (error.status === 413) reason = 'El reporte supera el tamaño permitido. Reduce la descripción e inténtalo de nuevo.';
                 else if (error.status === 429) reason = 'Se recibieron demasiados intentos. Espera unos minutos antes de volver a enviar.';
                 else if (!error.status) reason = 'No se pudo conectar con el servicio. Revisa tu conexión e inténtalo nuevamente.';
                 showResult('error', 'No se pudo enviar el reporte', reason);
+                await window.DARE_TECH_TURNSTILE.reset();
             } finally {
                 // Restaurar el estado original del botón
                 sendBtn.textContent = originalText;

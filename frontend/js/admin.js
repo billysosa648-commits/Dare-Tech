@@ -230,7 +230,8 @@ document.addEventListener('DOMContentLoaded', () => {
     async function annulInvoice(id, number) {
         if (!confirm(`¿Anular la factura ${number || ''}? La factura quedará registrada como anulada.`)) return;
         try {
-            const response = await apiFetch(`/facturas/${encodeURIComponent(id)}`, { method: 'DELETE' });
+            // La anulación contable usa PATCH para reservar DELETE al borrado definitivo.
+            const response = await apiFetch(`/facturas/${encodeURIComponent(id)}/annul`, { method: 'PATCH' });
             if (!response.ok) throw new Error(await responseMessage(response, 'No se pudo anular la factura.'));
             await loadInvoices();
         } catch (error) { alert(error.message); }

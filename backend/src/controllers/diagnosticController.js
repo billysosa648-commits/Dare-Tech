@@ -2,19 +2,27 @@ const Diagnostic = require('../models/Diagnostic');
 const Invoice = require('../models/Invoice');
 const { serializeInvoice } = require('./invoiceController');
 const createTicket = require('../services/ticketService');
+const SpamFingerprint = require('../models/SpamFingerprint');
 
+// Crea tickets después de que los controles públicos adjuntan sus huellas de contacto.
 async function createDiagnostic(req, res) {
   try {
     const { brand, model, issue, customerName, customerContact } = req.body;
-    const diagnostic = await createTicket({ brand, model, issue, customerName, customerContact });
-    res.status(201).json(diagnostic);
+    const diagnostic = await createTicket({ brand, model, issue, customerName, customerContact, ...req.diagnosticHashes });
+    const publicResult = diagnostic.toObject();
+    delete publicResult.contactHash;
+    delete publicResult.spamHash;
+    res.status(201).json(publicResult);
   } catch (error) {
+    // Libera la reserva si la escritura del ticket falla antes de crear el diagnóstico.
+    if (req.diagnosticHashes?.spamHash) await SpamFingerprint.deleteOne({ _id: req.diagnosticHashes.spamHash }).catch(() => {});
     if (error.code === 11000) return res.status(409).json({ message: 'No se pudo generar el ticket. Intenta nuevamente.' });
     console.error('Error al guardar diagnóstico:', error.message);
     res.status(500).json({ message: 'No se pudo guardar el diagnóstico' });
   }
 }
 
+// Lista diagnósticos y agrupa sus facturas para el panel administrativo.
 async function getAllDiagnostics(req, res) {
   try {
     const diagnostics = await Diagnostic.find().sort({ createdAt: -1 }).lean();
@@ -39,6 +47,7 @@ async function getAllDiagnostics(req, res) {
   }
 }
 
+// Devuelve reportes recibidos con paginación acotada.
 async function getReceivedReports(req, res) {
   try {
     const page = Number(req.query.page || 1);
@@ -57,6 +66,7 @@ async function getReceivedReports(req, res) {
   }
 }
 
+// Actualiza el estado y agrega una entrada al historial del diagnóstico.
 async function updateDiagnosticStatus(req, res) {
   try {
     const { id } = req.params;
@@ -73,22 +83,29 @@ async function updateDiagnosticStatus(req, res) {
   }
 }
 
+// Busca el seguimiento por ticket y devuelve solo campos públicos.
 async function trackByTicket(req, res) {
   try {
-    const ticketNumber = req.params.ticketNumber.toUpperCase();
-    const diagnostic = await Diagnostic.findOne({ ticketNumber })
-      .select('ticketNumber brand model issue status statusHistory').lean();
-    if (!diagnostic) return res.status(404).json({ message: 'No se encontró ningún ticket con ese número' });
-
-    const { _id, ...publicDiagnostic } = diagnostic;
-    const invoices = (await Invoice.find({ diagnosticId: _id, status: { $ne: 'anulada' } })
-      .sort({ createdAt: -1, _id: -1 }).lean()).map(invoice => serializeInvoice(invoice, { publicView: true }));
+    const publicDiagnostic = await getPublicTicketData(req.params.ticketNumber);
+    if (!publicDiagnostic) return res.status(404).json({ message: 'No se encontró ningún ticket con ese número' });
     res.set('Cache-Control', 'no-store');
-    res.json({ ...publicDiagnostic, invoices, invoice: invoices[0] || null });
+    res.json(publicDiagnostic);
   } catch (error) {
     console.error('Error al consultar ticket:', error.message);
     res.status(500).json({ message: 'No se pudo consultar el ticket' });
   }
 }
 
-module.exports = { createDiagnostic, getAllDiagnostics, getReceivedReports, updateDiagnosticStatus, trackByTicket };
+// Reutiliza la vista pública de seguimiento sin incluir datos ni identificadores del cliente.
+async function getPublicTicketData(ticketNumber) {
+  const diagnostic = await Diagnostic.findOne({ ticketNumber: String(ticketNumber).toUpperCase() })
+    .select('ticketNumber brand model issue status statusHistory').lean();
+  if (!diagnostic) return null;
+  const invoices = (await Invoice.find({ diagnosticId: diagnostic._id, status: { $ne: 'anulada' } })
+    .sort({ createdAt: -1, _id: -1 }).lean()).map(invoice => serializeInvoice(invoice, { publicView: true }));
+  const { _id, ...publicDiagnostic } = diagnostic;
+  return { ...publicDiagnostic, invoices, invoice: invoices[0] || null };
+}
+
+// Exporta la consulta pública para reutilizarla desde el chatbot.
+module.exports = { createDiagnostic, getAllDiagnostics, getReceivedReports, updateDiagnosticStatus, trackByTicket, getPublicTicketData };

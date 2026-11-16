@@ -9,9 +9,14 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:invoice-flow": "node scripts/testInvoiceFlow.js",
+    "test:diagnostic-abuse": "node scripts/testDiagnosticAbuse.js",
+    "test:diagnostic-daily-limit": "node scripts/testDiagnosticDailyLimit.js",
+    "test:deletion": "node scripts/testDeletion.js",
+    "test:chatbot": "node scripts/testChatbot.js",
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "migrate:invoices": "node scripts/migrateInvoices.js"
+    "migrate:invoices": "node scripts/migrateInvoices.js",
+    "seed:faqs": "node src/seed/seedFaqs.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

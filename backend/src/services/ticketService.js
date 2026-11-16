@@ -1,6 +1,7 @@
 const Diagnostic = require('../models/Diagnostic');
 const Counter = require('../models/Counter');
 
+// Reserva un número consecutivo e inserta el diagnóstico en MongoDB.
 async function createTicket(ticketData, session = null, origin = 'report') {
   const attempts = session ? 1 : 5;
   for (let attempt = 0; attempt < attempts; attempt++) {
@@ -17,6 +18,8 @@ async function createTicket(ticketData, session = null, origin = 'report') {
       issue: ticketData.issue.trim(),
       customerName: ticketData.customerName.trim(),
       customerContact: ticketData.customerContact.trim(),
+      contactHash: ticketData.contactHash,
+      spamHash: ticketData.spamHash,
       origin,
       status: 'recibido',
       statusHistory: [{ status: 'recibido', note: 'Diagnóstico recibido' }]
