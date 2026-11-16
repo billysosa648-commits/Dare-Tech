@@ -52,10 +52,14 @@ async function getReceivedReports(req, res) {
   try {
     const page = Number(req.query.page || 1);
     const limit = Math.min(2, Math.max(1, Number(req.query.limit) || 2));
+    const search = String(req.query.search || '').trim().slice(0, 100);
+    const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const filter = { origin: { $ne: 'invoice' } };
+    if (escaped) filter.$or = ['ticketNumber', 'brand', 'model', 'issue', 'customerName', 'customerContact'].map(field => ({ [field]: new RegExp(escaped, 'i') }));
     const [reports, total] = await Promise.all([
-      Diagnostic.find({ origin: { $ne: 'invoice' } }).select('ticketNumber brand model issue customerName customerContact status createdAt')
+      Diagnostic.find(filter).select('ticketNumber brand model issue customerName customerContact status createdAt')
         .sort({ createdAt: -1, _id: -1 }).skip((page - 1) * limit).limit(limit).lean(),
-      Diagnostic.countDocuments({ origin: { $ne: 'invoice' } })
+      Diagnostic.countDocuments(filter)
     ]);
     res.set('Cache-Control', 'no-store, private');
     res.set('Pragma', 'no-cache');
@@ -96,6 +100,17 @@ async function trackByTicket(req, res) {
   }
 }
 
+// Busca un ticket administrativo por referencia y conserva su identificador interno.
+async function getDiagnosticByTicket(req, res) {
+  try {
+    const ticket = await Diagnostic.findOne({ ticketNumber: String(req.params.ticketNumber).toUpperCase() }).select('_id ticketNumber status').lean();
+    return ticket ? res.json(ticket) : res.status(404).json({ message: 'No se encontró el ticket' });
+  } catch (error) {
+    console.error('Error al buscar ticket para facturación:', error.message);
+    return res.status(500).json({ message: 'No se pudo buscar el ticket' });
+  }
+}
+
 // Reutiliza la vista pública de seguimiento sin incluir datos ni identificadores del cliente.
 async function getPublicTicketData(ticketNumber) {
   const diagnostic = await Diagnostic.findOne({ ticketNumber: String(ticketNumber).toUpperCase() })
@@ -108,4 +123,4 @@ async function getPublicTicketData(ticketNumber) {
 }
 
 // Exporta la consulta pública para reutilizarla desde el chatbot.
-module.exports = { createDiagnostic, getAllDiagnostics, getReceivedReports, updateDiagnosticStatus, trackByTicket, getPublicTicketData };
+module.exports = { createDiagnostic, getAllDiagnostics, getReceivedReports, updateDiagnosticStatus, trackByTicket, getDiagnosticByTicket, getPublicTicketData };

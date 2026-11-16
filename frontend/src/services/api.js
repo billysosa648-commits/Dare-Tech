@@ -13,7 +13,11 @@ export async function apiFetch(path, options = {}) {
   const response = await fetch(`${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`, { ...options, headers });
   if (!response.ok) {
     const payload = await response.json().catch(() => ({}));
-    throw new Error(payload.message || `La solicitud falló (${response.status}).`);
+    // Conserva detalles de conflictos para que la interfaz ofrezca una recuperación explícita.
+    const error = new Error(payload.message || `La solicitud falló (${response.status}).`);
+    error.status = response.status;
+    error.payload = payload;
+    throw error;
   }
   return response.status === 204 ? null : response.json();
 }

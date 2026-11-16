@@ -15,10 +15,12 @@
 |---|---|---|
 | API React | `frontend/src/services/api.js` | Todas las llamadas React pasan por `apiFetch`. |
 | Sesión JWT React | `frontend/src/services/sessionStore.js` | Token solo en memoria; se pierde al recargar. |
-| Campos | Componentes compartidos por definir en Fase 3 | Etiqueta, error y estado ocupado permanecen asociados. |
-| Selección múltiple | Tabla compartida por definir en Fase 3 | La selección se limita a filas visibles de la página. |
-| Confirmación de borrado | Diálogo compartido por definir en Fase 3 | El usuario escribe el ticket o número de factura antes de confirmar. |
-| Mensajes | Región de estado común por definir en Fase 3 | Mensajes claros de éxito, conflicto y recuperación. |
+| Campos | Formularios del panel React en `frontend/src/pages/AdminScaffold.jsx` | Etiqueta y estado permanecen asociados; el borrador se conserva en caso de error. |
+| Selección múltiple | Listas React de diagnósticos y facturas | La selección se limita a filas visibles de la página. |
+| Confirmación de borrado | Diálogo React del panel | Se escriben tickets o números de factura seleccionados; diagnósticos con facturas requieren confirmación explícita. |
+| Mensajes | Regiones de estado del panel y formularios | Los conflictos muestran facturas relacionadas y una opción de recuperación. |
+| Servicios | `Service` y `/api/services` | Nombre, categoría, descripción, estado y tiempo estimado opcional; gestión por el panel. |
+| Asistente de portada | `frontend/src/home.jsx` y `/api/chatbot` | Texto FAQ, sugerencias seleccionables y aviso de que precio/tiempo requieren diagnóstico. |
 
 ## Comportamiento de operaciones
 

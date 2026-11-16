@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { body, param, query } = require('express-validator');
 const rateLimit = require('express-rate-limit');
-const { createDiagnostic, getAllDiagnostics, getReceivedReports, updateDiagnosticStatus, trackByTicket } = require('../controllers/diagnosticController');
+const { createDiagnostic, getAllDiagnostics, getReceivedReports, updateDiagnosticStatus, trackByTicket, getDiagnosticByTicket } = require('../controllers/diagnosticController');
 const protect = require('../middlewares/authMiddleware');
 const { validate, onlyBodyFields } = require('../middlewares/validation');
 const adminRateLimiter = require('../middlewares/adminRateLimiter');
@@ -30,8 +30,10 @@ router.get('/track/:ticketNumber', publicLimiter, param('ticketNumber').isString
 router.use(protect, adminRateLimiter);
 // Lista diagnósticos y reportes para el panel administrativo.
 router.get('/', getAllDiagnostics);
+// Permite al panel resolver una referencia antes de asociar una factura.
+router.get('/admin-ticket/:ticketNumber', param('ticketNumber').isString().matches(/^DT-\d{5,10}$/i), validate, getDiagnosticByTicket);
 // Lista los reportes recibidos con paginación.
-router.get('/received', query('page').optional().isInt({ min: 1, max: 100000 }), query('limit').optional().isInt({ min: 1, max: 2 }), validate, getReceivedReports);
+router.get('/received', query('page').optional().isInt({ min: 1, max: 100000 }), query('limit').optional().isInt({ min: 1, max: 2 }), query('search').optional().isString().trim().isLength({ max: 100 }), validate, getReceivedReports);
 // Actualiza el estado y el historial de un diagnóstico.
 router.patch('/:id/status', onlyBodyFields(['status', 'note']), param('id').isMongoId(), body('status').isIn(['recibido', 'en_revision', 'reparado', 'entregado']), body('note').optional().isString().trim().isLength({ max: 300 }), validate, updateDiagnosticStatus);
 // Elimina diagnósticos seleccionados con verificación de facturas asociadas.

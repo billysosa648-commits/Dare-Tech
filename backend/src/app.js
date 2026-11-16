@@ -12,6 +12,7 @@ const diagnosticRoutes = require('./routes/diagnosticRoutes');
 const faqRoutes = require('./routes/faqRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const publicConfigRoutes = require('./routes/publicConfigRoutes');
+const serviceRoutes = require('./routes/serviceRoutes');
 
 // Configura Express y la cantidad de proxies confiables.
 const app = express();
@@ -76,6 +77,8 @@ app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/faqs', faqRoutes);
 // Proporciona la site key pública de Turnstile sin revelar secretos.
 app.use('/api/public-config', publicConfigRoutes);
+// Expone el catálogo público y su CRUD administrativo protegido.
+app.use('/api/services', serviceRoutes);
 
 // Convierte errores del servidor en respuestas JSON controladas.
 app.use((error, req, res, next) => {
