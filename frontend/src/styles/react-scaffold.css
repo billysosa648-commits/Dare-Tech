@@ -57,6 +57,7 @@
 .admin-dialog__close { position: absolute; top: .5rem; right: .6rem; border: 0; color: #e2e8f0; background: transparent; font-size: 1.6rem; cursor: pointer; }
 .admin-dialog__actions { justify-content: flex-end; margin-top: .5rem; }
 .home-diagnostic { display: grid; gap: 1.25rem; }
+.react-home-active #diagnostic-fallback { display: none; }
 .home-field { display: grid; gap: .5rem; color: #b8cbd0; }
 .home-field input, .home-field textarea, .home-field select, .help-chat input { width: 100%; min-height: 2.8rem; padding: .7rem; border: 1px solid rgb(0 243 255 / 32%); border-radius: 2px; color: #edf6f6; background: #080d12; }
 .home-field textarea { resize: vertical; }

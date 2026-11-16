@@ -161,6 +161,86 @@
                     <span class="diagnostic-terminal__status">● ONLINE</span>
                 </div>
 
+                <div id="diagnostic-fallback"><form id="diagnostic-form" class="diagnostic-terminal__content" novalidate>
+                    <div class="diagnostic-intro">
+                        <h2 class="diagnostic-intro__title">
+                            BIENVENIDO A DARE-TECH
+                        </h2>
+                        <p class="diagnostic-intro__description">
+                            SOMOS ECUATORIANOS APASIONADOS POR LA TECNOLOGÍA Y LA REPARACIÓN. DESCRIBE TU PROBLEMA PARA UNA ASESORÍA TÉCNICA INMEDIATA.
+                        </p>
+                    </div>
+
+                    <!--  Selección de Marca dinámicas por JS -->
+                    <fieldset class="diagnostic-step">
+                        <legend class="step-label" id="brand-label">
+                            <span class="accent-cyan">PASO 1:</span> Selecciona la Marca de tu Dispositivo
+                        </legend>
+                        <p id="brand-load-status" class="form-status" role="status" aria-live="polite">Cargando marcas...</p>
+                        <div id="brand-buttons" class="diagnostic-options" role="group" aria-labelledby="brand-label"></div>
+                        <div id="other-brand-container" class="diagnostic-custom-input is-hidden">
+                            <label class="visually-hidden" for="custom-brand-input">Escribe la marca de tu dispositivo</label>
+                            <input type="text" id="custom-brand-input" autocomplete="organization" maxlength="80" placeholder="Escribe la marca de tu dispositivo..." class="terminal-input terminal-input--full">
+                        </div>
+                    </fieldset>
+
+                    <!-- Selección de Modelo dinámicos por JS -->
+                    <fieldset id="step-model" class="diagnostic-step is-hidden">
+                        <legend class="step-label" id="model-label">
+                            <span class="accent-cyan">PASO 2:</span> Selecciona o Escribe el Modelo
+                        </legend>
+                        <div id="model-buttons" class="diagnostic-options" role="group" aria-labelledby="model-label"></div>
+                        <div id="other-model-container" class="diagnostic-custom-input is-hidden">
+                            <label class="visually-hidden" for="custom-model-input">Escribe el modelo del dispositivo</label>
+                            <input type="text" id="custom-model-input" maxlength="100" placeholder="Escribe el modelo..." class="terminal-input terminal-input--emphasis terminal-input--full">
+                        </div>
+                    </fieldset>
+
+                    <!-- Descripción de la Falla -->
+                    <div class="diagnostic-step">
+                        <label class="step-label" for="issue-description">
+                            <span class="accent-cyan">PASO 3:</span> Descripción de la Falla
+                        </label>
+                        <textarea id="issue-description" rows="4" maxlength="1500" placeholder="Describe el problema de tu equipo (Ej: No enciende, pantalla rota, cuenta Google...)" class="terminal-input terminal-input--emphasis terminal-input--full terminal-input--multiline"></textarea>
+                    </div>
+
+                    <!-- Datos de Contacto -->
+                    <fieldset class="diagnostic-contact-step">
+                        <legend class="step-label" id="contact-label">
+                            <span class="accent-cyan">PASO 4:</span> Datos de Contacto
+                        </legend>
+                        <div class="contact-fields">
+                            <label class="visually-hidden" for="user-name">Tu nombre</label>
+                            <input type="text" id="user-name" autocomplete="name" maxlength="120" placeholder="Tu Nombre" class="terminal-input">
+                            <label class="visually-hidden" for="user-contact">Teléfono o correo electrónico</label>
+                            <input type="text" id="user-contact" maxlength="120" placeholder="Teléfono o Email" class="terminal-input">
+                        </div>
+                    </fieldset>
+
+                    <!-- Campo oculto que los usuarios dejan vacío y los bots suelen completar. -->
+                    <div class="visually-hidden" aria-hidden="true">
+                        <label for="website-field">Deja este campo vacío</label>
+                        <input id="website-field" name="website" type="text" tabindex="-1" autocomplete="off">
+                    </div>
+
+                    <!-- Espacio accesible donde el navegador dibuja el reto Turnstile. -->
+                    <div id="turnstile-widget" class="diagnostic-step" role="group" aria-label="Verificación de seguridad"></div>
+                    <input id="form-started-at" type="hidden" value="">
+
+                    <!-- Botón de envío del diagnóstico -->
+                    <div class="diagnostic-submit">
+                        <button id="send-btn" type="submit" class="btn-neon btn-neon--lg">
+                            [ ENVIAR REPORTE ]
+                        </button>
+                    </div>
+                    <div id="report-result" class="report-result" role="status" aria-live="polite" aria-atomic="true" hidden>
+                        <div class="report-result__icon" aria-hidden="true"></div>
+                        <h3 class="report-result__title"></h3>
+                        <p class="report-result__message"></p>
+                        <p class="report-result__ticket" hidden></p>
+                        <button class="report-result__close" type="button">Entendido</button>
+                    </div>
+                </form></div>
                 <div id="diagnostic-app" aria-live="polite"></div>
             </div>
         </div>
@@ -256,6 +336,8 @@
 
     <!-- Enlace al script principal de JavaScript -->
     <div id="chatbot-root"></div>
+    <script type="module" src="js/common.js"></script>
+    <script type="module" src="js/scripts.js"></script>
     <script type="module" src="src/home.jsx"></script>
 
 </body>

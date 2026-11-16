@@ -23,6 +23,8 @@ function DiagnosticForm() {
   const [brands, setBrands] = useState([]), [brand, setBrand] = useState(''), [customBrand, setCustomBrand] = useState(''), [model, setModel] = useState(''), [customModel, setCustomModel] = useState(''), [issue, setIssue] = useState(''), [name, setName] = useState(''), [contact, setContact] = useState('');
   const [siteKey, setSiteKey] = useState(''), [started] = useState(Date.now()), [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [ticket, setTicket] = useState('');
   const { token, mount } = useTurnstile(siteKey);
+  // Oculta el formulario HTML de respaldo después de montar React correctamente.
+  useEffect(() => { document.documentElement.classList.add('react-home-active'); return () => document.documentElement.classList.remove('react-home-active'); }, []);
   useEffect(() => { let live = true; Promise.all([apiFetch('/brands'), apiFetch('/public-config')]).then(([catalog, config]) => { if (live) { setBrands(catalog); setSiteKey(config.turnstileSiteKey || ''); } }).catch(() => live && setMessage('No se pudo cargar el formulario. Intenta más tarde.')); return () => { live = false; }; }, []);
   const current = brands.find(item => item.name === brand);
   // Valida requisitos sencillos y procesa el ticket nuevo sin exponer HTML.
