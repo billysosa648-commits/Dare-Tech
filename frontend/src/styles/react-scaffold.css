@@ -56,30 +56,4 @@
 .admin-dialog { position: relative; width: min(100%, 38rem); max-height: min(90vh, 55rem); overflow: auto; padding: clamp(1.25rem, 4vw, 2rem); box-shadow: 0 1rem 4rem #000; }
 .admin-dialog__close { position: absolute; top: .5rem; right: .6rem; border: 0; color: #e2e8f0; background: transparent; font-size: 1.6rem; cursor: pointer; }
 .admin-dialog__actions { justify-content: flex-end; margin-top: .5rem; }
-.home-diagnostic { display: grid; gap: 1.25rem; }
-.react-home-active #diagnostic-fallback { display: none; }
-.home-field { display: grid; gap: .5rem; color: #b8cbd0; }
-.home-field input, .home-field textarea, .home-field select, .help-chat input { width: 100%; min-height: 2.8rem; padding: .7rem; border: 1px solid rgb(0 243 255 / 32%); border-radius: 2px; color: #edf6f6; background: #080d12; }
-.home-field textarea { resize: vertical; }
-.home-contact { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
-.home-honeypot { position: absolute !important; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
-.home-turnstile { min-height: 66px; }
-.home-result { color: var(--green-accent); }
-.home-diagnostic button:disabled { opacity: .5; cursor: wait; }
-.help-chat { position: fixed; z-index: 40; right: 1rem; bottom: 1rem; }
-.help-chat__toggle { min-height: 3rem; padding: .7rem 1rem; border: 1px solid var(--cyan-glow); color: #061116; background: var(--cyan-glow); font-weight: 700; cursor: pointer; }
-.help-chat__panel { display: flex; flex-direction: column; width: min(24rem, calc(100vw - 2rem)); height: min(34rem, calc(100vh - 6rem)); margin-bottom: .65rem; border: 1px solid rgb(0 243 255 / 55%); background: #0a0e14; box-shadow: 0 1rem 3rem #000b; }
-.help-chat__panel header, .help-chat__panel form { display: flex; align-items: center; gap: .5rem; padding: .75rem; }
-.help-chat__panel header { justify-content: space-between; border-bottom: 1px solid rgb(0 243 255 / 24%); }
-.help-chat__panel h2 { margin: 0; color: var(--cyan-glow); font-size: 1rem; }
-.help-chat__panel header button { color: white; background: transparent; border: 0; font-size: 1.5rem; cursor: pointer; }
-.help-chat__notice { margin: .5rem .75rem; color: #a9bec1; font-size: .75rem; }
-.help-chat__messages { flex: 1; overflow-y: auto; padding: .75rem; }
-.help-chat__message { width: fit-content; max-width: 92%; margin: .5rem 0; padding: .65rem; border: 1px solid rgb(0 243 255 / 20%); overflow-wrap: anywhere; }
-.help-chat__message--user { margin-left: auto; border-color: rgb(0 255 102 / 35%); }
-.help-chat__message p { margin: 0; white-space: pre-wrap; }
-.help-chat__message button { display: block; margin-top: .4rem; color: var(--cyan-glow); background: transparent; border: 0; text-align: left; text-decoration: underline; cursor: pointer; }
-.help-chat__panel form { border-top: 1px solid rgb(0 243 255 / 24%); }
-.help-chat__panel form button { min-height: 2.7rem; color: #061116; background: var(--cyan-glow); border: 0; padding: 0 .8rem; }
-.help-chat :focus-visible, .home-diagnostic :focus-visible { outline: 2px solid var(--green-accent); outline-offset: 3px; }
-@media (max-width: 650px) { .home-contact { grid-template-columns: 1fr; } .admin-record { align-items: flex-start; } .admin-toolbar > * { flex: 1 1 auto; } .admin-toolbar .admin-danger { width: 100%; } }
+@media (max-width: 650px) { .admin-record { align-items: flex-start; } .admin-toolbar > * { flex: 1 1 auto; } .admin-toolbar .admin-danger { width: 100%; } }

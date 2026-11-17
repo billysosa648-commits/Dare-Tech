@@ -1,0 +1,16 @@
+/* Mantiene el formulario React con el diseño de terminal que ya usa Dare-Tech. */
+.home-diagnostic { display: grid; gap: 1.25rem; }
+.diagnostic-step .form-status:empty { display: none; }
+.diagnostic-custom-input { display: grid; gap: .5rem; color: #cbd5e1; }
+.diagnostic-step:disabled { opacity: .55; }
+.diagnostic-step:disabled .term-btn { cursor: not-allowed; }
+.diagnostic-honeypot { position: absolute !important; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.diagnostic-turnstile { min-height: 66px; margin-top: 1rem; }
+.home-contact { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+.home-diagnostic button:disabled { opacity: .55; cursor: wait; }
+.home-diagnostic .report-result { margin-top: 1rem; }
+.home-diagnostic .report-result__ticket a { color: var(--cyan-glow); text-underline-offset: .2em; }
+.home-diagnostic :focus-visible { outline: 2px solid var(--green-accent); outline-offset: 3px; }
+
+/* Adapta los campos de contacto al ancho de escritorio sin cambiar el terminal. */
+@media (min-width: 768px) { .home-contact { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

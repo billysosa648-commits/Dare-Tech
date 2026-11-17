@@ -1,0 +1,43 @@
+/* Da al widget fijo la misma paleta oscura y cian del sitio. */
+.chatbot-widget { font-family: inherit; color: #e2e8f0; }
+.chatbot-launcher { position: fixed; z-index: 1100; right: max(1rem, env(safe-area-inset-right, 0px)); bottom: max(1rem, env(safe-area-inset-bottom, 0px)); display: grid; width: 60px; height: 60px; place-items: center; border: 2px solid #071116; border-radius: 50%; background: var(--cyan-glow); color: #071116; box-shadow: 0 8px 28px rgb(0 0 0 / 48%), 0 0 20px rgb(0 243 255 / 28%); cursor: pointer; transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease; }
+.chatbot-launcher:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgb(0 0 0 / 55%), 0 0 24px rgb(0 243 255 / 42%); }
+.chatbot-launcher:focus-visible, .chatbot-dialog button:focus-visible, .chatbot-dialog input:focus-visible { outline: 3px solid var(--green-accent); outline-offset: 3px; }
+.chatbot-launcher svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.chatbot-launcher span { font-size: 2.25rem; line-height: 1; }
+.chatbot-launcher.is-open { visibility: hidden; opacity: 0; pointer-events: none; }
+
+/* Ancla el cuadro sobre el lanzador y permite una salida animada sin mover la página. */
+.chatbot-dialog { position: fixed; z-index: 1099; right: max(1rem, env(safe-area-inset-right, 0px)); bottom: calc(max(1rem, env(safe-area-inset-bottom, 0px)) + 76px); display: flex; width: min(360px, calc(100vw - 32px)); height: min(520px, calc(100dvh - 112px)); flex-direction: column; overflow: hidden; border: 1px solid rgb(0 243 255 / 55%); border-radius: .65rem; background: #0a0e14; box-shadow: 0 1rem 3rem rgb(0 0 0 / 58%); opacity: 0; pointer-events: none; transform: translateY(12px) scale(.985); visibility: hidden; transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s; }
+.chatbot-dialog.is-open { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); visibility: visible; transition-delay: 0s; }
+.chatbot-dialog__header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-bottom: 1px solid rgb(0 243 255 / 24%); background: #101820; padding: .85rem 1rem; }
+.chatbot-dialog__eyebrow { margin: 0 0 .25rem; color: #87a5ad; font-size: .65rem; letter-spacing: .12em; }
+.chatbot-dialog__header h2 { margin: 0; color: var(--cyan-glow); font-size: 1rem; }
+.chatbot-dialog__close { display: grid; width: 40px; height: 40px; place-items: center; border: 1px solid rgb(0 243 255 / 30%); border-radius: 50%; background: transparent; color: #e2e8f0; font-size: 1.6rem; cursor: pointer; }
+.chatbot-dialog__notice { margin: .65rem .85rem .35rem; color: #a9bec1; font-size: .72rem; line-height: 1.4; }
+.chatbot-dialog__messages { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: .5rem .85rem 1rem; scroll-behavior: smooth; }
+.chatbot-dialog__suggestions { display: grid; justify-items: start; gap: .5rem; padding: .35rem 0; }
+.chatbot-dialog__suggestions > p { margin: 0 0 .2rem; color: #d7e5e8; }
+.chatbot-dialog__suggestions button, .chatbot-message button { max-width: 100%; border: 1px solid rgb(0 243 255 / 35%); border-radius: 1rem; background: #101a22; padding: .45rem .7rem; color: var(--cyan-glow); font: inherit; font-size: .78rem; text-align: left; overflow-wrap: anywhere; cursor: pointer; }
+.chatbot-message { width: fit-content; max-width: 88%; margin: .65rem 0; border: 1px solid rgb(0 243 255 / 24%); border-radius: .75rem .75rem .75rem .2rem; background: #101820; padding: .65rem .75rem; overflow-wrap: anywhere; }
+.chatbot-message--user { margin-left: auto; border-color: rgb(0 255 102 / 34%); border-radius: .75rem .75rem .2rem .75rem; background: rgb(0 255 102 / 7%); }
+.chatbot-message p { margin: 0; white-space: pre-wrap; line-height: 1.45; }
+.chatbot-message button { display: block; margin-top: .55rem; }
+.chatbot-dialog__typing { margin: .35rem 0; color: #8da6ac; font-size: .8rem; animation: chatbot-pulse 1s ease-in-out infinite alternate; }
+.chatbot-dialog__composer { display: flex; align-items: center; gap: .55rem; border-top: 1px solid rgb(0 243 255 / 22%); background: #0e151c; padding: .75rem; }
+.chatbot-dialog__composer input { min-width: 0; min-height: 46px; flex: 1; border: 1px solid rgb(0 243 255 / 35%); border-radius: .35rem; background: #05080c; padding: .65rem .75rem; color: #e2e8f0; font: inherit; }
+.chatbot-dialog__composer button { min-height: 46px; border: 1px solid var(--cyan-glow); border-radius: .35rem; background: var(--cyan-glow); padding: 0 .85rem; color: #071116; font: inherit; font-weight: 700; cursor: pointer; }
+.chatbot-dialog__composer button:disabled { opacity: .5; cursor: wait; }
+@keyframes chatbot-pulse { from { opacity: .55; } to { opacity: 1; } }
+
+/* Maximiza el cuadro móvil y respeta el espacio reservado por los bordes del dispositivo. */
+@media (max-width: 600px) {
+  .chatbot-dialog { top: max(8px, env(safe-area-inset-top, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); bottom: max(8px, env(safe-area-inset-bottom, 0px)); left: max(8px, env(safe-area-inset-left, 0px)); width: auto; height: auto; max-height: none; border-radius: .5rem; }
+}
+
+/* Elimina desplazamientos animados cuando la persona lo solicita en el sistema. */
+@media (prefers-reduced-motion: reduce) {
+  .chatbot-dialog, .chatbot-launcher { transition-duration: .01ms; }
+  .chatbot-dialog__messages { scroll-behavior: auto; }
+  .chatbot-dialog__typing { animation: none; }
+}
