@@ -189,7 +189,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .invoice-ticket-fields label { color: #94a3b8; font-size: .82rem; }
 .invoice-ticket-fields input, .invoice-ticket-fields textarea { width: 100%; min-width: 0; border: 1px solid rgba(0,243,255,.35); border-radius: .375rem; background: #05080c; padding: .5rem .65rem; color: #e2e8f0; }
 .invoice-ticket-fields textarea { resize: vertical; }
-#invoice-modal.is-open, #invoice-detail-modal.is-open, #invoice-customer-modal.is-open { display: flex; z-index: 50; }
+#invoice-modal.is-open, #invoice-detail-modal.is-open, #invoice-customer-modal.is-open, #delete-records-modal.is-open { display: flex; z-index: 50; }
 .invoice-item-heading, .item-row { display: grid; grid-template-columns: minmax(8rem, 1fr) 4.25rem 7rem 2.25rem; align-items: center; gap: .5rem; }
 .invoice-item-heading { margin-bottom: .35rem; color: #94a3b8; font-size: .72rem; }
 .item-row input { width: 100%; padding: .45rem; font-size: .85rem; }
@@ -442,3 +442,32 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .invoice-dialog--form { margin: 0; }
 .invoice-ticket-fields { min-width: 0; }
+.delete-records-dialog { width: min(100%, 52rem); max-height: min(88vh, 48rem); overflow: auto; border: 1px solid rgba(0,243,255,.4); border-radius: .375rem; background: #0d1117; padding: clamp(1rem, 4vw, 1.5rem); box-shadow: 0 1rem 4rem rgba(0,0,0,.65); }
+.delete-records-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.delete-records-heading h2 { margin: .35rem 0 .75rem; color: var(--cyan-glow); font-size: 1.25rem; }
+.delete-records-dialog > p { color: #a8bec2; }
+.delete-records-dialog button { cursor: pointer; }
+.delete-records-dialog button:disabled { cursor: not-allowed; opacity: .55; }
+.delete-records-toolbar { display: grid; grid-template-columns: minmax(12rem, 1fr) auto auto; align-items: end; gap: .55rem .75rem; margin: .8rem 0; }
+.delete-records-toolbar label { grid-column: 1 / -1; color: #a8bec2; }
+.delete-records-toolbar input { min-width: 0; width: 100%; min-height: 2.5rem; border: 1px solid rgba(0,243,255,.32); border-radius: .25rem; background: #080d12; color: #edf6f6; padding: .55rem .7rem; }
+#delete-records-count { align-self: center; color: var(--cyan-glow); white-space: nowrap; }
+.delete-records-table-wrap { max-height: min(42vh, 22rem); overflow: auto; border: 1px solid rgba(0,243,255,.22); }
+.delete-records-table { width: 100%; min-width: 34rem; border-collapse: collapse; text-align: left; }
+.delete-records-table th, .delete-records-table td { padding: .65rem .75rem; border-bottom: 1px solid rgba(148,163,184,.18); }
+.delete-records-table thead { position: sticky; top: 0; z-index: 1; color: #dffcff; background: #0d141c; }
+.delete-records-table tbody tr[data-selected='true'] { background: rgba(0,243,255,.08); }
+.delete-records-table tbody tr:hover { background: rgba(0,243,255,.05); }
+.delete-records-table th:first-child, .delete-records-table td:first-child { width: 6.5rem; }
+.delete-records-table input[type='checkbox'] { width: 1.2rem; height: 1.2rem; accent-color: var(--cyan-glow); cursor: pointer; }
+.delete-records-empty { padding: 1.5rem !important; color: #a8bec2; text-align: center; }
+.delete-records-confirmation { margin-top: .9rem; padding: .75rem; border-left: 3px solid #f87171; color: #ffd5dc !important; background: rgba(248,113,113,.08); }
+.delete-records-selected-list { max-height: 8rem; overflow: auto; margin: .5rem 0 0 1.25rem; color: #ffd5dc; }
+#delete-records-normal-actions, #delete-records-confirm-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: .6rem; margin-top: .8rem; }
+@media (max-width: 650px) {
+    .delete-records-toolbar { grid-template-columns: 1fr; align-items: stretch; }
+    .delete-records-toolbar label { grid-column: auto; }
+    #delete-records-count { padding: .25rem 0; }
+    #delete-records-normal-actions, #delete-records-confirm-actions { justify-content: stretch; }
+    #delete-records-normal-actions > *, #delete-records-confirm-actions > * { flex: 1 1 auto; }
+}

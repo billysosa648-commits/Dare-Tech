@@ -25,13 +25,16 @@ export default function DiagnosticForm() {
   // Carga el catálogo y la clave pública de Turnstile al montar la portada.
   useEffect(() => {
     let active = true;
-    Promise.all([apiFetch('/brands'), apiFetch('/public-config')])
-      .then(([catalog, config]) => {
+    Promise.allSettled([apiFetch('/brands'), apiFetch('/public-config')])
+      .then(([brandsResult, configResult]) => {
         if (!active) return;
-        setBrands(catalog);
-        setSiteKey(config.turnstileSiteKey || '');
+        if (brandsResult.status === 'fulfilled') {
+          setBrands(brandsResult.value);
+        } else {
+          setMessage(brandsResult.reason.message || 'No se pudieron cargar las marcas.');
+        }
+        if (configResult.status === 'fulfilled') setSiteKey(configResult.value.turnstileSiteKey || '');
       })
-      .catch(error => { if (active) setMessage(error.message || 'No se pudo cargar el formulario.'); })
       .finally(() => { if (active) setLoadingCatalog(false); });
     return () => { active = false; };
   }, []);
@@ -98,7 +101,17 @@ export default function DiagnosticForm() {
   }
 
   return (
-    <form className="diagnostic-terminal__content home-diagnostic" onSubmit={submit} aria-labelledby="react-diagnostic-title">
+    <div className="diagnostic-terminal">
+      <div className="diagnostic-terminal__toolbar">
+        <div className="terminal-window__controls">
+          <span className="terminal-window__dot terminal-window__dot--red" />
+          <span className="terminal-window__dot terminal-window__dot--yellow" />
+          <span className="terminal-window__dot terminal-window__dot--green" />
+          <span className="diagnostic-terminal__filename">Diagnóstico Dare-Tech</span>
+        </div>
+        <span className="diagnostic-terminal__status">● ONLINE</span>
+      </div>
+      <form className="diagnostic-terminal__content home-diagnostic" onSubmit={submit} aria-labelledby="react-diagnostic-title">
       <div className="diagnostic-intro">
         <h2 id="react-diagnostic-title" className="diagnostic-intro__title">BIENVENIDO A DARE-TECH</h2>
         <p className="diagnostic-intro__description">SOMOS ECUATORIANOS APASIONADOS POR LA TECNOLOGÍA Y LA REPARACIÓN. DESCRIBE TU PROBLEMA PARA UNA ASESORÍA TÉCNICA.</p>
@@ -154,6 +167,7 @@ export default function DiagnosticForm() {
         <p className="report-result__message">{message}</p>
         {ticketNumber && <p className="report-result__ticket">Ticket: <a href={`seguimiento.html?ticket=${encodeURIComponent(ticketNumber)}`}>{ticketNumber}</a></p>}
       </div>}
-    </form>
+      </form>
+    </div>
   );
 }

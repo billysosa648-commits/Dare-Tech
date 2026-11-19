@@ -37,7 +37,7 @@ router.get('/received', query('page').optional().isInt({ min: 1, max: 100000 }),
 // Actualiza el estado y el historial de un diagnóstico.
 router.patch('/:id/status', onlyBodyFields(['status', 'note']), param('id').isMongoId(), body('status').isIn(['recibido', 'en_revision', 'reparado', 'entregado']), body('note').optional().isString().trim().isLength({ max: 300 }), validate, updateDiagnosticStatus);
 // Elimina diagnósticos seleccionados con verificación de facturas asociadas.
-router.post('/bulk-delete', onlyBodyFields(['ids', 'withInvoices']), body('ids').isArray({ min: 1, max: 100 }), body('ids.*').isMongoId(), body('withInvoices').optional().isBoolean().toBoolean(), validate, bulkDeleteDiagnostics);
+router.post('/bulk-delete', onlyBodyFields(['ids', 'withInvoices']), body('ids').isArray({ min: 1, max: 5 }), body('ids.*').isMongoId(), body('withInvoices').optional().isBoolean().toBoolean(), validate, bulkDeleteDiagnostics);
 // Elimina un diagnóstico y exige autorización explícita para borrar sus facturas.
 router.delete('/:id', param('id').isMongoId(), query('withInvoices').optional().isIn(['true', 'false']), validate, deleteDiagnostic);
 

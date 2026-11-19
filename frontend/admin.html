@@ -49,6 +49,9 @@
     <header class="admin-panel__toolbar">
       <h1 id="admin-panel-title" class="admin-panel__title">[ PANEL DE ADMINISTRACIÓN ]</h1>
       <div class="admin-panel__actions">
+        <button id="delete-records-open" type="button" class="button button--danger">
+          Eliminar facturas/reportes
+        </button>
         <button id="create-invoice-top-btn" type="button" class="invoice-create-button">
           + Crear factura
         </button>
@@ -94,6 +97,42 @@
     </section>
   </section>
   </main>
+  <div id="delete-records-modal" class="admin-modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="delete-records-title" aria-describedby="delete-records-help">
+    <section class="delete-records-dialog" tabindex="-1">
+      <div class="delete-records-heading">
+        <div><p class="admin-kicker">GESTIÓN / BORRADO</p><h2 id="delete-records-title">Eliminar facturas y reportes</h2></div>
+        <button id="delete-records-x" type="button" class="invoice-action" aria-label="Cerrar selección">×</button>
+      </div>
+      <p id="delete-records-help">Selecciona los registros que quieras borrar. Si eliminas un reporte con facturas, selecciona también sus facturas.</p>
+      <p id="delete-records-status" class="invoice-list-status" role="status" aria-live="polite"></p>
+      <button id="delete-records-retry" type="button" class="invoice-action is-hidden">Reintentar carga</button>
+      <div class="delete-records-toolbar">
+        <label for="delete-records-search">Buscar por número o persona</label>
+        <input id="delete-records-search" type="search">
+        <button id="delete-records-toggle-visible" type="button" class="invoice-action" aria-pressed="false">Seleccionar visibles</button>
+        <span id="delete-records-count" aria-live="polite">0 seleccionados</span>
+      </div>
+      <div class="delete-records-table-wrap" aria-busy="false">
+        <table class="delete-records-table">
+          <caption class="visually-hidden">Facturas y reportes disponibles para eliminar</caption>
+          <thead><tr><th scope="col">Seleccionar</th><th scope="col">Tipo</th><th scope="col">N.º de reporte/factura</th><th scope="col">Persona</th></tr></thead>
+          <tbody id="delete-records-body"></tbody>
+        </table>
+      </div>
+      <p id="delete-records-confirmation" class="delete-records-confirmation is-hidden" role="alert"></p>
+      <ul id="delete-records-selected-list" class="delete-records-selected-list is-hidden"></ul>
+      <div class="invoice-detail-actions">
+        <div id="delete-records-normal-actions">
+          <button id="delete-records-close" type="button" class="invoice-action">Cerrar</button>
+          <button id="delete-records-start" type="button" class="invoice-action invoice-action--danger" disabled>Eliminar</button>
+        </div>
+        <div id="delete-records-confirm-actions" class="is-hidden">
+          <button id="delete-records-back" type="button" class="invoice-action">Volver a la tabla</button>
+          <button id="delete-records-submit" type="button" class="invoice-action invoice-action--danger">Confirmar eliminación</button>
+        </div>
+      </div>
+    </section>
+  </div>
   <!--  MODAL: CREAR FACTURA  -->
   <div id="invoice-modal" class="admin-modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="invoice-modal-title">
     <form id="invoice-create-form" class="invoice-dialog invoice-dialog--form" novalidate>

@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const Brand = require('../models/Brand');
 
 const brandsToInsert = [
-  { name: 'Apple', models: ['iPhone Con version de ios 26.1 o inferior ya formateado', 'iPhone 6', 'iPhone 7', 'Iphone 8', 'iPhone X'] },
+  { name: 'Apple', models: ['iPhone 6', 'iPhone 7', 'Iphone 8', 'iPhone X'] },
   { name: 'Samsung', models: ['A15', 'A55', 'A02', 'A16', 'A34', 'S22', 'S25' ]  },
   { name: 'Xiaomi', models: ['Redmi Note 13', 'Poco X6 Pro', 'Xiaomi 14', 'Redmi 12', 'Xiaomi ultima generacion' ] },
   { name: 'Motorola', models: ['Edge 40', 'Moto G56', 'Moto G 2025', 'Moto G 5G'] },

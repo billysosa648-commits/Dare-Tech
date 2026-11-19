@@ -8,6 +8,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const changePasswordBtn = $('change-password-btn'), passwordChangeError = $('password-change-error');
     const loginBtn = $('login-btn'), loginError = $('login-error'), logoutBtn = $('logout-btn');
     const createInvoiceTopBtn = $('create-invoice-top-btn');
+    const deleteRecordsOpen = $('delete-records-open'), deleteRecordsModal = $('delete-records-modal');
+    const deleteRecordsBody = $('delete-records-body'), deleteRecordsSearch = $('delete-records-search');
+    const deleteRecordsStatus = $('delete-records-status'), deleteRecordsCount = $('delete-records-count');
+    const deleteRecordsTableWrap = deleteRecordsModal.querySelector('.delete-records-table-wrap');
+    const deleteRecordsRetry = $('delete-records-retry'), deleteRecordsStart = $('delete-records-start');
+    const deleteRecordsToggleVisible = $('delete-records-toggle-visible');
     const invoiceModal = $('invoice-modal'), invoiceCreateForm = $('invoice-create-form');
     const ticketCustomerInput = $('invoice-ticket-customer'), ticketContactInput = $('invoice-ticket-contact');
     const ticketBrandInput = $('invoice-ticket-brand'), ticketModelInput = $('invoice-ticket-model');
@@ -29,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const invoiceDiscount = $('invoice-discount'), invoiceNotes = $('invoice-notes');
     let invoicePage = 1, invoicePages = 1, invoiceTotal = 0;
     let invoiceIvaRateBps = 1500, idempotencyKey = null, searchTimer, customerEditInvoiceId = null;
+    let deleteRecords = [], selectedDeleteRecords = new Set(), deleteRecordsBusy = false, deleteRecordsLoading = false, deleteRecordsLoadFailed = false, deleteRecordsConfirming = false, deleteRecordsLoadId = 0;
 
     const getToken = () => sessionStorage.getItem('adminToken');
     const money = amount => `$${Number(amount || 0).toFixed(2)}`;
@@ -131,6 +138,232 @@ document.addEventListener('DOMContentLoaded', () => {
     $('reports-refresh-btn').addEventListener('click', () => loadReceivedReports());
     $('reports-prev').addEventListener('click', () => { if (reportsPage > 1) { reportsPage--; loadReceivedReports(); } });
     $('reports-next').addEventListener('click', () => { if (reportsPage < reportsPages) { reportsPage++; loadReceivedReports(); } });
+
+    let deleteRecordsPreviousFocus = null, deleteRecordsPreviousOverflow = '';
+    function setDeleteRecordsStatus(message, isError = false) {
+        deleteRecordsStatus.textContent = message;
+        deleteRecordsStatus.setAttribute('role', isError ? 'alert' : 'status');
+    }
+    function getVisibleDeleteRecords() {
+        const query = deleteRecordsSearch.value.trim().toLocaleLowerCase('es-EC');
+        return query ? deleteRecords.filter(record => (record.type + ' ' + record.number + ' ' + record.person).toLocaleLowerCase('es-EC').includes(query)) : deleteRecords;
+    }
+    function updateDeleteRecordsControls() {
+        const visible = getVisibleDeleteRecords();
+        const allVisibleSelected = visible.length > 0 && visible.every(record => selectedDeleteRecords.has(record.key));
+        deleteRecordsCount.textContent = selectedDeleteRecords.size + ' seleccionados';
+        deleteRecordsStart.disabled = deleteRecordsBusy || deleteRecordsLoading || deleteRecordsConfirming || selectedDeleteRecords.size === 0;
+        deleteRecordsToggleVisible.disabled = deleteRecordsBusy || deleteRecordsLoading || deleteRecordsConfirming || visible.length === 0;
+        deleteRecordsSearch.disabled = deleteRecordsBusy || deleteRecordsConfirming;
+        deleteRecordsToggleVisible.textContent = allVisibleSelected ? 'Deseleccionar visibles' : 'Seleccionar visibles';
+        deleteRecordsToggleVisible.setAttribute('aria-pressed', String(allVisibleSelected));
+    }
+    function renderDeleteRecords() {
+        deleteRecordsBody.replaceChildren();
+        const visible = getVisibleDeleteRecords();
+        if (!visible.length) {
+            const row = document.createElement('tr'), cell = document.createElement('td');
+            cell.colSpan = 4; cell.className = 'delete-records-empty';
+            cell.textContent = deleteRecordsLoading ? 'Cargando reportes y facturas…'
+                : deleteRecordsLoadFailed ? 'No se pudo cargar la tabla.'
+                    : deleteRecords.length ? 'No hay resultados para esa búsqueda.' : 'No hay reportes ni facturas.';
+            row.appendChild(cell); deleteRecordsBody.appendChild(row);
+        } else visible.forEach(record => {
+            const row = document.createElement('tr');
+            if (selectedDeleteRecords.has(record.key)) row.dataset.selected = 'true';
+            const selectCell = document.createElement('td'), checkbox = document.createElement('input');
+            checkbox.type = 'checkbox'; checkbox.checked = selectedDeleteRecords.has(record.key);
+            checkbox.disabled = deleteRecordsBusy || deleteRecordsLoading || deleteRecordsConfirming || (!checkbox.checked && selectedDeleteRecords.size >= 5);
+            checkbox.setAttribute('aria-label', 'Seleccionar ' + record.type.toLowerCase() + ' ' + record.number);
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked && selectedDeleteRecords.size >= 5) {
+                    setDeleteRecordsStatus('Puedes seleccionar hasta 5 elementos por operación.', true);
+                    checkbox.checked = false; return;
+                }
+                if (checkbox.checked) selectedDeleteRecords.add(record.key);
+                else selectedDeleteRecords.delete(record.key);
+                setDeleteRecordsStatus('');
+                renderDeleteRecords();
+            });
+            selectCell.appendChild(checkbox);
+            const typeCell = document.createElement('td'); typeCell.textContent = record.type;
+            const numberCell = document.createElement('th'); numberCell.scope = 'row'; numberCell.textContent = record.number;
+            const personCell = document.createElement('td'); personCell.textContent = record.person;
+            row.append(selectCell, typeCell, numberCell, personCell); deleteRecordsBody.appendChild(row);
+        });
+        updateDeleteRecordsControls();
+    }
+    async function loadDeleteRecords() {
+        const loadId = ++deleteRecordsLoadId;
+        deleteRecordsLoading = true;
+        deleteRecordsLoadFailed = false;
+        deleteRecords = [];
+        selectedDeleteRecords.clear();
+        deleteRecordsTableWrap.setAttribute('aria-busy', 'true');
+        deleteRecordsRetry.classList.add('is-hidden');
+        setDeleteRecordsStatus('Cargando reportes y facturas…');
+        renderDeleteRecords();
+        try {
+            const response = await apiFetch('/diagnostics');
+            if (loadId !== deleteRecordsLoadId) return;
+            if (!response.ok) throw new Error(await responseMessage(response, 'No se pudieron cargar los reportes y las facturas.'));
+            const diagnostics = await response.json();
+            deleteRecords = diagnostics.flatMap(diagnostic => {
+                const invoices = (diagnostic.invoices || []).map(invoice => ({
+                    key: 'invoice:' + invoice._id, id: String(invoice._id), type: 'Factura',
+                    number: invoice.invoiceNumber, person: invoice.customer?.name || diagnostic.customerName || 'Sin nombre'
+                }));
+                return [{
+                    key: 'report:' + diagnostic._id, id: String(diagnostic._id), type: 'Reporte',
+                    number: diagnostic.ticketNumber, person: diagnostic.customerName || 'Sin nombre',
+                    invoiceIds: invoices.map(invoice => invoice.id)
+                }, ...invoices];
+            });
+            const available = new Set(deleteRecords.map(record => record.key));
+            selectedDeleteRecords = new Set([...selectedDeleteRecords].filter(key => available.has(key)));
+            renderDeleteRecords();
+            setDeleteRecordsStatus(deleteRecords.length + ' registros disponibles.');
+        } catch (error) {
+            if (loadId !== deleteRecordsLoadId) return;
+            deleteRecords = [];
+            selectedDeleteRecords.clear();
+            deleteRecordsLoadFailed = true;
+            renderDeleteRecords();
+            setDeleteRecordsStatus(error.message || 'No se pudieron cargar los reportes y las facturas.', true);
+            deleteRecordsRetry.classList.remove('is-hidden');
+        } finally {
+            if (loadId === deleteRecordsLoadId) {
+                deleteRecordsLoading = false;
+                deleteRecordsTableWrap.setAttribute('aria-busy', 'false');
+                renderDeleteRecords();
+            }
+        }
+    }
+    function openDeleteRecords() {
+        deleteRecordsPreviousFocus = document.activeElement;
+        deleteRecordsPreviousOverflow = document.body.style.overflow;
+        deleteRecordsConfirming = false;
+        $('delete-records-confirmation').classList.add('is-hidden');
+        $('delete-records-selected-list').classList.add('is-hidden');
+        $('delete-records-normal-actions').classList.remove('is-hidden');
+        $('delete-records-confirm-actions').classList.add('is-hidden');
+        deleteRecordsSearch.value = '';
+        document.body.style.overflow = 'hidden';
+        deleteRecordsModal.classList.remove('is-hidden'); deleteRecordsModal.classList.add('is-open');
+        $('delete-records-x').focus();
+        loadDeleteRecords();
+    }
+    function closeDeleteRecords() {
+        if (deleteRecordsBusy) return;
+        deleteRecordsLoadId++;
+        deleteRecordsLoading = false;
+        deleteRecordsTableWrap.setAttribute('aria-busy', 'false');
+        deleteRecordsConfirming = false;
+        $('delete-records-confirmation').classList.add('is-hidden');
+        $('delete-records-selected-list').classList.add('is-hidden');
+        $('delete-records-normal-actions').classList.remove('is-hidden');
+        $('delete-records-confirm-actions').classList.add('is-hidden');
+        deleteRecordsModal.classList.add('is-hidden'); deleteRecordsModal.classList.remove('is-open');
+        document.body.style.overflow = deleteRecordsPreviousOverflow;
+        deleteRecordsPreviousFocus?.focus?.();
+    }
+    function beginDeleteRecords() {
+        const selected = deleteRecords.filter(record => selectedDeleteRecords.has(record.key));
+        const invoiceIds = new Set(selected.filter(record => record.type === 'Factura').map(record => record.id));
+        const missing = selected.filter(record => record.type === 'Reporte')
+            .flatMap(report => (report.invoiceIds || []).filter(id => !invoiceIds.has(id)));
+        if (missing.length) {
+            const numbers = [...new Set(missing.map(id => deleteRecords.find(record => record.type === 'Factura' && record.id === id)?.number || id))];
+            setDeleteRecordsStatus('Selecciona también las facturas asociadas: ' + numbers.join(', ') + '.', true);
+            return;
+        }
+        if (!selected.length) return;
+        const reports = selected.filter(record => record.type === 'Reporte').length;
+        const invoices = selected.length - reports;
+        const summary = $('delete-records-confirmation');
+        summary.textContent = 'Se eliminarán permanentemente ' + selected.length + ' elementos: ' + reports + ' reportes y ' + invoices + ' facturas. Esta acción no se puede deshacer.';
+        const list = $('delete-records-selected-list'); list.replaceChildren();
+        selected.forEach(record => {
+            const item = document.createElement('li'); item.textContent = record.type + ' ' + record.number + ' · ' + record.person; list.appendChild(item);
+        });
+        summary.classList.remove('is-hidden'); list.classList.remove('is-hidden');
+        $('delete-records-normal-actions').classList.add('is-hidden'); $('delete-records-confirm-actions').classList.remove('is-hidden');
+        deleteRecordsConfirming = true; renderDeleteRecords(); $('delete-records-back').focus();
+    }
+    function cancelDeleteConfirmation() {
+        deleteRecordsConfirming = false;
+        $('delete-records-confirmation').classList.add('is-hidden'); $('delete-records-selected-list').classList.add('is-hidden');
+        $('delete-records-normal-actions').classList.remove('is-hidden'); $('delete-records-confirm-actions').classList.add('is-hidden');
+        renderDeleteRecords(); deleteRecordsStart.focus();
+    }
+    async function submitDeleteRecords() {
+        const selected = deleteRecords.filter(record => selectedDeleteRecords.has(record.key));
+        if (!selected.length || deleteRecordsBusy) return;
+        const invoiceIds = selected.filter(record => record.type === 'Factura').map(record => record.id);
+        const reportIds = selected.filter(record => record.type === 'Reporte').map(record => record.id);
+        let deletedInvoices = 0;
+        deleteRecordsBusy = true; $('delete-records-submit').disabled = true;
+        $('delete-records-back').disabled = true; $('delete-records-x').disabled = true;
+        deleteRecordsModal.querySelector('.delete-records-dialog').focus();
+        try {
+            if (invoiceIds.length) {
+                const response = await apiFetch('/invoices/bulk-delete', { method: 'POST', body: JSON.stringify({ ids: invoiceIds }) });
+                if (!response.ok) throw new Error(await responseMessage(response, 'No se pudieron eliminar las facturas.'));
+                deletedInvoices = (await response.json()).deletedCount || 0;
+                if (deletedInvoices !== invoiceIds.length) throw new Error('No se eliminaron todas las facturas seleccionadas. Actualiza la tabla y vuelve a intentarlo.');
+            }
+            let deletedReports = 0;
+            if (reportIds.length) {
+                const response = await apiFetch('/diagnostics/bulk-delete', {
+                    method: 'POST', body: JSON.stringify({ ids: reportIds, withInvoices: false })
+                });
+                if (!response.ok) throw new Error(await responseMessage(response, 'No se pudieron eliminar los reportes.'));
+                deletedReports = (await response.json()).deletedCount || 0;
+                if (deletedReports !== reportIds.length) throw new Error('No se eliminaron todos los reportes seleccionados. Actualiza la tabla y vuelve a intentarlo.');
+            }
+            selectedDeleteRecords.clear(); cancelDeleteConfirmation(); await loadDeleteRecords();
+            await Promise.all([loadInvoices(), loadReceivedReports()]);
+            const summary = [];
+            if (deletedReports) summary.push(deletedReports + (deletedReports === 1 ? ' reporte' : ' reportes'));
+            if (deletedInvoices) summary.push(deletedInvoices + (deletedInvoices === 1 ? ' factura' : ' facturas'));
+            setDeleteRecordsStatus('Se eliminaron ' + (summary.join(' y ') || '0 elementos') + '.');
+        } catch (error) {
+            cancelDeleteConfirmation();
+            if (deletedInvoices) {
+                await loadDeleteRecords();
+                await Promise.all([loadInvoices(), loadReceivedReports()]);
+                setDeleteRecordsStatus('Se eliminaron ' + deletedInvoices + ' facturas, pero no se completó el borrado de los reportes. Revisa la tabla y vuelve a seleccionar.', true);
+            } else setDeleteRecordsStatus(error.message || 'No se pudieron eliminar los elementos seleccionados.', true);
+        } finally {
+            deleteRecordsBusy = false; $('delete-records-submit').disabled = false; renderDeleteRecords();
+            $('delete-records-back').disabled = false; $('delete-records-x').disabled = false;
+        }
+    }
+    deleteRecordsOpen.addEventListener('click', openDeleteRecords);
+    $('delete-records-x').addEventListener('click', closeDeleteRecords);
+    $('delete-records-close').addEventListener('click', closeDeleteRecords);
+    deleteRecordsModal.addEventListener('mousedown', event => { if (event.target === deleteRecordsModal) closeDeleteRecords(); });
+    deleteRecordsModal.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && !deleteRecordsBusy) closeDeleteRecords();
+        if (event.key !== 'Tab') return;
+        const focusable = [...deleteRecordsModal.querySelectorAll('button:not(:disabled), input:not(:disabled)')];
+        if (!focusable.length) { event.preventDefault(); return; }
+        if (event.shiftKey && document.activeElement === focusable[0]) { event.preventDefault(); focusable.at(-1).focus(); }
+        else if (!event.shiftKey && document.activeElement === focusable.at(-1)) { event.preventDefault(); focusable[0].focus(); }
+    });
+    deleteRecordsSearch.addEventListener('input', () => { setDeleteRecordsStatus(''); renderDeleteRecords(); });
+    deleteRecordsToggleVisible.addEventListener('click', () => {
+        const visible = getVisibleDeleteRecords();
+        const allSelected = visible.length > 0 && visible.every(record => selectedDeleteRecords.has(record.key));
+        if (allSelected) visible.forEach(record => selectedDeleteRecords.delete(record.key));
+        else visible.forEach(record => { if (selectedDeleteRecords.size < 5) selectedDeleteRecords.add(record.key); });
+        setDeleteRecordsStatus(selectedDeleteRecords.size >= 5 && visible.some(record => !selectedDeleteRecords.has(record.key)) ? 'La selección está limitada a 5 elementos.' : '');
+        renderDeleteRecords();
+    });
+    deleteRecordsRetry.addEventListener('click', loadDeleteRecords);
+    deleteRecordsStart.addEventListener('click', beginDeleteRecords);
+    $('delete-records-back').addEventListener('click', cancelDeleteConfirmation);
+    $('delete-records-submit').addEventListener('click', submitDeleteRecords);
 
     if (getToken()) showPanel();
     loginForm.addEventListener('submit', async event => {

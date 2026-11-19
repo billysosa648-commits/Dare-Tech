@@ -56,7 +56,7 @@ router.post('/', onlyBodyFields(['diagnosticId', 'ticket', 'items', 'discountCen
   diagnosticId, ticketData, itemList, optionalDiscount, optionalNotes,
   idempotencyHeader, validate, createInvoice);
 // Elimina un lote acotado de facturas por identificadores Mongo válidos.
-router.post('/bulk-delete', onlyBodyFields(['ids']), body('ids').isArray({ min: 1, max: 100 }), body('ids.*').isMongoId(), validate, bulkDeleteInvoices);
+router.post('/bulk-delete', onlyBodyFields(['ids']), body('ids').isArray({ min: 1, max: 5 }), body('ids.*').isMongoId(), validate, bulkDeleteInvoices);
 router.get('/diagnostic/:diagnosticId', param('diagnosticId').isMongoId(), validate, getInvoiceByDiagnostic);
 router.get('/:id', invoiceId, validate, getInvoiceById);
 router.put('/:id', invoiceId, onlyBodyFields(['items', 'discountCents', 'notes']), itemList,

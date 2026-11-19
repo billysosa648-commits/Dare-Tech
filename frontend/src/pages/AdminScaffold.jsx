@@ -4,6 +4,7 @@ import { apiFetch } from '../services/api.js';
 import { setSessionToken } from '../services/sessionStore.js';
 import useSession from '../hooks/useSession.js';
 import AppHeader from '../components/AppHeader.jsx';
+import DeleteRecordsDialog from '../components/DeleteRecordsDialog.jsx';
 
 // Normaliza los errores de API para mostrar mensajes accionables.
 function errorText(error) { return error?.message || 'Ocurrió un error. Intenta nuevamente.'; }
@@ -29,14 +30,15 @@ function Login({ onLogin }) {
 function AdminPanel() {
   const { endSession } = useSession();
   const [section, setSection] = useState('diagnosticos'), [notice, setNotice] = useState(''), [error, setError] = useState('');
-  const [records, setRecords] = useState([]), [selected, setSelected] = useState([]), [page, setPage] = useState(1), [totalPages, setTotalPages] = useState(1), [search, setSearch] = useState('');
+  const [records, setRecords] = useState([]), [page, setPage] = useState(1), [totalPages, setTotalPages] = useState(1), [search, setSearch] = useState('');
   const [brands, setBrands] = useState([]), [services, setServices] = useState([]), [faqs, setFaqs] = useState([]), [invoices, setInvoices] = useState([]);
   const [dialog, setDialog] = useState(null), [busy, setBusy] = useState(false);
+  const [deleteManagerOpen, setDeleteManagerOpen] = useState(false);
   const headings = useMemo(() => ({ diagnosticos: 'Diagnósticos', facturas: 'Facturas', servicios: 'Servicios', catalogo: 'Marcas y modelos', faqs: 'Preguntas frecuentes' }), []);
 
   // Obtiene la sección elegida y conserva su paginación en pantalla.
   async function load(targetPage = page) {
-    setError(''); setSelected([]);
+    setError('');
     try {
       if (section === 'diagnosticos') { const data = await apiFetch(`/diagnostics/received?page=${targetPage}&limit=2&search=${encodeURIComponent(search)}`); setRecords(data.items); setTotalPages(Math.max(1, data.pages)); }
       if (section === 'facturas') { const data = await apiFetch(`/invoices?page=${targetPage}&limit=4&search=${encodeURIComponent(search)}`); setInvoices(data.items); setTotalPages(Math.max(1, data.pages)); }
@@ -61,8 +63,6 @@ function AdminPanel() {
   // Pide una confirmación escrita antes de borrar datos seleccionados.
   async function confirmDelete() {
     if (!dialog?.reference || dialog.input !== dialog.reference) return;
-    if (dialog.kind === 'diagnosticos') await mutate('/diagnostics/bulk-delete', 'POST', { ids: selected, withInvoices: dialog.withInvoices });
-    if (dialog.kind === 'facturas') await mutate('/invoices/bulk-delete', 'POST', { ids: selected });
     if (dialog.kind === 'faq') await mutate(`/faqs/${dialog.id}`, 'DELETE');
     if (dialog.kind === 'servicio') await mutate(`/services/${dialog.id}`, 'DELETE');
     if (dialog.kind === 'marca') await mutate(`/brands/${dialog.id}`, 'DELETE');
@@ -71,29 +71,30 @@ function AdminPanel() {
   async function setStatus(item, status) { await mutate(`/diagnostics/${item._id}/status`, 'PATCH', { status, note: 'Actualizado desde el panel' }); }
   const nav = [['diagnosticos', 'Diagnósticos'], ['facturas', 'Facturas'], ['servicios', 'Servicios'], ['catalogo', 'Marcas / modelos'], ['faqs', 'FAQs']];
 
-  return <main id="main-content" className="admin-react"><AppHeader /><div className="admin-top"><p className="admin-kicker">DARE-TECH / OPERACIONES</p><button className="admin-quiet" onClick={async () => { await apiFetch('/auth/logout', { method: 'POST' }).catch(() => {}); endSession(); }}>Cerrar sesión</button></div>
+  return <main id="main-content" className="admin-react"><AppHeader /><div className="admin-top"><p className="admin-kicker">DARE-TECH / OPERACIONES</p><div className="admin-top__actions"><button className="admin-danger" onClick={() => setDeleteManagerOpen(true)}>Eliminar facturas/reportes</button><button className="admin-quiet" onClick={async () => { await apiFetch('/auth/logout', { method: 'POST' }).catch(() => {}); endSession(); }}>Cerrar sesión</button></div></div>
     <nav className="admin-tabs" aria-label="Secciones del panel">{nav.map(([id, title]) => <button key={id} aria-current={section === id ? 'page' : undefined} onClick={() => { setSection(id); setPage(1); }}>{title}</button>)}</nav>
     <section className="admin-workspace" aria-labelledby="admin-heading"><div className="admin-section-heading"><div><p className="admin-kicker">GESTIÓN</p><h1 id="admin-heading">{headings[section]}</h1></div>{['servicios', 'catalogo', 'faqs', 'facturas'].includes(section) && <button className="admin-button" onClick={() => setDialog({ type: section === 'catalogo' ? 'brand' : section === 'faqs' ? 'faq' : section === 'servicios' ? 'service' : 'invoice' })}>+ Nuevo</button>}</div>
     {notice && <p role="status" className="admin-success">{notice}</p>}{error && <p role="alert" className="admin-error">{error}</p>}
-    {section === 'diagnosticos' && <><div className="admin-toolbar"><label>Buscar ticket o cliente<input value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => e.key === 'Enter' && (setPage(1), load(1))} /></label><button className="admin-quiet" onClick={() => { setPage(1); load(1); }}>Buscar</button><button className="admin-danger" disabled={!selected.length} onClick={() => setDialog({ type: 'delete', kind: 'diagnosticos', reference: selected.map(id => records.find(row => row._id === id)?.ticketNumber).filter(Boolean).join(', '), input: '', withInvoices: false })}>Eliminar seleccionados</button></div><Records rows={records} selected={selected} setSelected={setSelected} onStatus={setStatus} /></>}
-    {section === 'facturas' && <><div className="admin-toolbar"><label>Buscar factura, ticket o cliente<input value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => e.key === 'Enter' && (setPage(1), load(1))} /></label><button className="admin-quiet" onClick={() => { setPage(1); load(1); }}>Buscar</button><button className="admin-danger" disabled={!selected.length} onClick={() => setDialog({ type: 'delete', kind: 'facturas', reference: selected.map(id => invoices.find(row => row._id === id)?.invoiceNumber).filter(Boolean).join(', '), input: '' })}>Eliminar seleccionadas</button></div><Invoices rows={invoices} selected={selected} setSelected={setSelected} onAction={async (invoice, action) => action === 'pagada' ? mutate(`/invoices/${invoice._id}/pay`, 'PATCH') : action === 'anular' ? mutate(`/invoices/${invoice._id}/annul`, 'PATCH') : setDialog({ type: 'invoice-edit', invoice })} /></>}
+    {section === 'diagnosticos' && <><div className="admin-toolbar"><label>Buscar ticket o cliente<input value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => e.key === 'Enter' && (setPage(1), load(1))} /></label><button className="admin-quiet" onClick={() => { setPage(1); load(1); }}>Buscar</button></div><Records rows={records} onStatus={setStatus} /></>}
+    {section === 'facturas' && <><div className="admin-toolbar"><label>Buscar factura, ticket o cliente<input value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => e.key === 'Enter' && (setPage(1), load(1))} /></label><button className="admin-quiet" onClick={() => { setPage(1); load(1); }}>Buscar</button></div><Invoices rows={invoices} onAction={async (invoice, action) => action === 'pagada' ? mutate(`/invoices/${invoice._id}/pay`, 'PATCH') : action === 'anular' ? mutate(`/invoices/${invoice._id}/annul`, 'PATCH') : setDialog({ type: 'invoice-edit', invoice })} /></>}
     {section === 'catalogo' && <div className="admin-card"><button className="admin-quiet" onClick={() => setDialog({ type: 'brand' })}>Agregar marca</button>{brands.map(brand => <article className="admin-row" key={brand._id}><div><strong>{brand.name}</strong><p>{(brand.models || []).join(', ') || 'Sin modelos registrados'}</p></div><button onClick={() => setDialog({ type: 'brand', brand })}>Editar</button><button className="admin-danger" onClick={() => setDialog({ type: 'delete', kind: 'marca', id: brand._id, reference: brand.name, input: '' })}>Eliminar</button></article>)}</div>}
     {section === 'servicios' && <div className="admin-card">{services.map(service => <article className="admin-row" key={service._id}><div><strong>{service.name}</strong><p>{service.category} · {service.active ? 'Activo' : 'Inactivo'}{service.estimatedTime ? ` · ${service.estimatedTime}` : ''}</p><p>{service.description}</p></div><button onClick={() => setDialog({ type: 'service', service })}>Editar</button><button className="admin-danger" onClick={() => setDialog({ type: 'delete', kind: 'servicio', id: service._id, reference: service.name, input: '' })}>Eliminar</button></article>)}</div>}
     {section === 'faqs' && <div className="admin-card">{faqs.map(faq => <article className="admin-row" key={faq._id}><div><strong>{faq.question}</strong><p>{faq.answer}</p><small>{faq.category} · {faq.active ? 'Activa' : 'Inactiva'}</small></div><button onClick={() => setDialog({ type: 'faq', faq })}>Editar</button><button className="admin-danger" onClick={() => setDialog({ type: 'delete', kind: 'faq', id: faq._id, reference: faq.question, input: '' })}>Eliminar</button></article>)}</div>}
     {['diagnosticos', 'facturas'].includes(section) && <div className="admin-pagination"><button disabled={page <= 1} onClick={() => setPage(page - 1)}>Anterior</button><span>Página {page} de {totalPages}</span><button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Siguiente</button></div>}
     </section>
     {dialog && <AdminDialog dialog={dialog} setDialog={setDialog} busy={busy} mutate={mutate} confirmDelete={confirmDelete} />}
+    {deleteManagerOpen && <DeleteRecordsDialog onClose={() => setDeleteManagerOpen(false)} onDeleted={() => load()} />}
   </main>;
 }
 
-// Renderiza diagnósticos con selección y control de estado accesible.
-function Records({ rows, selected, setSelected, onStatus }) {
-  return <div className="admin-list">{!rows.length && <p className="admin-empty">No hay diagnósticos en esta página.</p>}{rows.map(item => <article className="admin-record" key={item._id}><label className="admin-check"><input type="checkbox" checked={selected.includes(item._id)} onChange={e => setSelected(e.target.checked ? [...selected, item._id] : selected.filter(id => id !== item._id))} /><span>Seleccionar {item.ticketNumber}</span></label><div className="admin-record__main"><p className="admin-kicker">{item.ticketNumber} · {new Date(item.createdAt).toLocaleDateString('es-EC')}</p><h2>{item.brand} {item.model}</h2><p>{item.issue}</p><p>{item.customerName} · {item.customerContact}</p></div><label>Estado<select value={item.status} onChange={e => onStatus(item, e.target.value)}><option value="recibido">Recibido</option><option value="en_revision">En revisión</option><option value="reparado">Reparado</option><option value="entregado">Entregado</option></select></label><a href={`seguimiento.html?ticket=${encodeURIComponent(item.ticketNumber)}`}>Ver seguimiento</a></article>)}</div>;
+// Renderiza diagnósticos y permite actualizar su estado.
+function Records({ rows, onStatus }) {
+  return <div className="admin-list">{!rows.length && <p className="admin-empty">No hay diagnósticos en esta página.</p>}{rows.map(item => <article className="admin-record" key={item._id}><div className="admin-record__main"><p className="admin-kicker">{item.ticketNumber} · {new Date(item.createdAt).toLocaleDateString('es-EC')}</p><h2>{item.brand} {item.model}</h2><p>{item.issue}</p><p>{item.customerName} · {item.customerContact}</p></div><label>Estado<select value={item.status} onChange={e => onStatus(item, e.target.value)}><option value="recibido">Recibido</option><option value="en_revision">En revisión</option><option value="reparado">Reparado</option><option value="entregado">Entregado</option></select></label><a href={`seguimiento.html?ticket=${encodeURIComponent(item.ticketNumber)}`}>Ver seguimiento</a></article>)}</div>;
 }
 
 // Presenta facturas y acciones permitidas por el estado contable.
-function Invoices({ rows, selected, setSelected, onAction }) {
-  return <div className="admin-list">{!rows.length && <p className="admin-empty">No se encontraron facturas.</p>}{rows.map(invoice => <article className="admin-record" key={invoice._id}><label className="admin-check"><input type="checkbox" checked={selected.includes(invoice._id)} onChange={e => setSelected(e.target.checked ? [...selected, invoice._id] : selected.filter(id => id !== invoice._id))} /><span>Seleccionar {invoice.invoiceNumber}</span></label><div className="admin-record__main"><p className="admin-kicker">{invoice.invoiceNumber} · {invoice.ticketNumber}</p><h2>{invoice.customer?.name || 'Cliente'}</h2><p>{invoice.items?.map(item => `${item.description} × ${item.quantity}`).join(' · ')}</p><strong>${Number(invoice.total).toFixed(2)} USD</strong></div><span className={`admin-status admin-status--${invoice.status}`}>{invoice.status}</span>{invoice.status === 'pendiente' && <><button onClick={() => onAction(invoice, 'pagada')}>Marcar pagada</button><button onClick={() => onAction(invoice, 'editar')}>Editar ítems</button><button className="admin-quiet" onClick={() => onAction(invoice, 'anular')}>Anular</button></>}</article>)}</div>;
+function Invoices({ rows, onAction }) {
+  return <div className="admin-list">{!rows.length && <p className="admin-empty">No se encontraron facturas.</p>}{rows.map(invoice => <article className="admin-record" key={invoice._id}><div className="admin-record__main"><p className="admin-kicker">{invoice.invoiceNumber} · {invoice.ticketNumber}</p><h2>{invoice.customer?.name || 'Cliente'}</h2><p>{invoice.items?.map(item => `${item.description} × ${item.quantity}`).join(' · ')}</p><strong>${Number(invoice.total).toFixed(2)} USD</strong></div><span className={`admin-status admin-status--${invoice.status}`}>{invoice.status}</span>{invoice.status === 'pendiente' && <><button onClick={() => onAction(invoice, 'pagada')}>Marcar pagada</button><button onClick={() => onAction(invoice, 'editar')}>Editar ítems</button><button className="admin-quiet" onClick={() => onAction(invoice, 'anular')}>Anular</button></>}</article>)}</div>;
 }
 
 // Centraliza formularios CRUD y confirmación de eliminación escrita.

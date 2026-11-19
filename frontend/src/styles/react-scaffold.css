@@ -56,4 +56,33 @@
 .admin-dialog { position: relative; width: min(100%, 38rem); max-height: min(90vh, 55rem); overflow: auto; padding: clamp(1.25rem, 4vw, 2rem); box-shadow: 0 1rem 4rem #000; }
 .admin-dialog__close { position: absolute; top: .5rem; right: .6rem; border: 0; color: #e2e8f0; background: transparent; font-size: 1.6rem; cursor: pointer; }
 .admin-dialog__actions { justify-content: flex-end; margin-top: .5rem; }
+.admin-top__actions { display: flex; align-items: center; gap: .65rem; }
+.delete-records-dialog { width: min(100%, 52rem); max-height: min(88vh, 48rem); }
+.delete-records-help { margin: .55rem 0 1rem; color: #a8bec2; }
+.delete-records-toolbar { display: grid; grid-template-columns: minmax(12rem, 1fr) auto auto; align-items: end; gap: .55rem .8rem; margin: .75rem 0; }
+.delete-records-toolbar > label { grid-column: 1 / -1; color: #a8bec2; }
+.delete-records-search { display: flex; gap: .5rem; min-width: 0; }
+.delete-records-search input { flex: 1; min-width: 0; }
+.delete-records-count { align-self: center; color: var(--cyan-glow); font-size: .85rem; white-space: nowrap; }
+.delete-records-table-wrap { max-height: min(42vh, 22rem); overflow: auto; border: 1px solid rgb(0 243 255 / 22%); }
+.delete-records-table { width: 100%; min-width: 34rem; border-collapse: collapse; text-align: left; }
+.delete-records-table th, .delete-records-table td { padding: .65rem .75rem; border-bottom: 1px solid rgb(148 163 184 / 18%); }
+.delete-records-table thead { position: sticky; top: 0; z-index: 1; color: #dffcff; background: #0d141c; }
+.delete-records-table tbody tr[data-selected='true'] { background: rgb(0 243 255 / 8%); }
+.delete-records-table tbody tr:hover { background: rgb(0 243 255 / 5%); }
+.delete-records-table th:first-child, .delete-records-table td:first-child { width: 6.5rem; }
+.delete-records-table input[type='checkbox'] { width: 1.2rem; height: 1.2rem; accent-color: var(--cyan-glow); cursor: pointer; }
+.delete-records-state { padding: 1.5rem !important; color: #a8bec2; text-align: center; }
+.delete-records-confirmation { margin: 1rem 0 0; padding: .75rem; border-left: 3px solid #ff657a; color: #ffd5dc; background: rgb(255 101 122 / 8%); }
+.delete-records-confirmation ul { max-height: 8rem; overflow: auto; margin: .5rem 0 0 1.25rem; }
+.delete-records-confirmation li { overflow-wrap: anywhere; }
+.delete-records-actions { flex-wrap: wrap; }
+@media (max-width: 650px) {
+  .admin-top { flex-wrap: wrap; }
+  .admin-top__actions { width: 100%; flex-wrap: wrap; justify-content: flex-start; }
+  .delete-records-toolbar { grid-template-columns: 1fr; align-items: stretch; }
+  .delete-records-toolbar > label { grid-column: auto; }
+  .delete-records-count { padding: .25rem 0; }
+  .delete-records-actions > * { flex: 1 1 auto; }
+}
 @media (max-width: 650px) { .admin-record { align-items: flex-start; } .admin-toolbar > * { flex: 1 1 auto; } .admin-toolbar .admin-danger { width: 100%; } }

@@ -13,10 +13,13 @@
     "test:diagnostic-daily-limit": "node scripts/testDiagnosticDailyLimit.js",
     "test:deletion": "node scripts/testDeletion.js",
     "test:chatbot": "node scripts/testChatbot.js",
+    "test:gemini": "node scripts/testGemini.js",
     "start": "node server.js",
     "dev": "node --watch server.js",
     "migrate:invoices": "node scripts/migrateInvoices.js",
-    "seed:faqs": "node src/seed/seedFaqs.js"
+    "seed:faqs": "node src/seed/seedFaqs.js",
+    "seed:brands": "node src/seed/seedBrands.js",
+    "admin:reset-password": "node scripts/resetAdminPassword.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

@@ -16,8 +16,8 @@
 | API React | `frontend/src/services/api.js` | Todas las llamadas React pasan por `apiFetch`. |
 | Sesión JWT React | `frontend/src/services/sessionStore.js` | Token solo en memoria; se pierde al recargar. |
 | Campos | Formularios del panel React en `frontend/src/pages/AdminScaffold.jsx` | Etiqueta y estado permanecen asociados; el borrador se conserva en caso de error. |
-| Selección múltiple | Listas React de diagnósticos y facturas | La selección se limita a filas visibles de la página. |
-| Confirmación de borrado | Diálogo React del panel | Se escriben tickets o números de factura seleccionados; diagnósticos con facturas requieren confirmación explícita. |
+| Selección múltiple | frontend/src/components/DeleteRecordsDialog.jsx (React) y frontend/js/admin.js (admin.html) | La tabla unificada muestra reportes y facturas; seleccionar visibles aplica al filtro actual, conserva selección al buscar y limita cada operación a 100 elementos. |
+| Confirmación de borrado | Diálogo de ambos paneles | Confirma cantidad y registros; para borrar un reporte se deben seleccionar también todas sus facturas asociadas. |
 | Mensajes | Regiones de estado del panel y formularios | Los conflictos muestran facturas relacionadas y una opción de recuperación. |
 | Servicios | `Service` y `/api/services` | Nombre, categoría, descripción, estado y tiempo estimado opcional; gestión por el panel. |
 | Asistente de portada | `frontend/src/home.jsx` y `/api/chatbot` | Texto FAQ, sugerencias seleccionables y aviso de que precio/tiempo requieren diagnóstico. |
@@ -27,7 +27,7 @@
 | Operación | En curso | Éxito | Error y recuperación |
 |---|---|---|---|
 | Login | Deshabilitar el botón y mostrar progreso | Abrir el panel | Mantener formulario y explicar el error. |
-| Borrado | Bloquear repetición y mostrar objeto confirmado | Actualizar lista y anunciar el resultado | En un `409`, mostrar las facturas asociadas y ofrecer el paso de confirmación explícita. |
+| Borrado de reporte/factura | Bloquear cambios de selección y doble envío | Borrar primero facturas seleccionadas y luego reportes, actualizar las listas y anunciar cantidades | Mantener tabla y selección ante error; si se borran facturas y falla el borrado de reportes, informar el resultado parcial y permitir recargar. |
 | Guardar FAQ | Conservar el borrador durante la solicitud | Mantenerse en el editor y mostrar guardado | Mantener el contenido para corregir y reintentar. |
 | Búsqueda | Indicar carga y conservar filtros | Actualizar resultados | Mostrar error recuperable sin borrar la búsqueda. |
 
