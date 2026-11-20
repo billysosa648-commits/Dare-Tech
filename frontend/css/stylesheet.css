@@ -5,6 +5,15 @@
 :root {
     --green-accent: #00ff66;
     --cyan-glow: #00f3ff;
+    overflow-x: clip;
+}
+
+/* Evita que un componente ensanche la página y desplace los controles fijos en móvil. */
+html, body {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
 }
 
 body {

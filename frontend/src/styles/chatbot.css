@@ -1,6 +1,6 @@
 /* Da al widget fijo la misma paleta oscura y cian del sitio. */
 .chatbot-widget { font-family: inherit; color: #e2e8f0; }
-.chatbot-launcher { position: fixed; z-index: 1100; right: max(1rem, env(safe-area-inset-right, 0px)); bottom: max(1rem, env(safe-area-inset-bottom, 0px)); display: grid; width: 60px; height: 60px; place-items: center; border: 2px solid #071116; border-radius: 50%; background: var(--cyan-glow); color: #071116; box-shadow: 0 8px 28px rgb(0 0 0 / 48%), 0 0 20px rgb(0 243 255 / 28%); cursor: pointer; transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease; }
+.chatbot-launcher { position: fixed; z-index: 1100; right: max(1rem, env(safe-area-inset-right, 0px)); bottom: max(1rem, env(safe-area-inset-bottom, 0px)); display: grid; width: 60px; height: 60px; place-items: center; border: 2px solid #071116; border-radius: 50%; background: var(--cyan-glow); color: #071116; box-shadow: 0 8px 28px rgb(0 0 0 / 48%), 0 0 20px rgb(0 243 255 / 28%); cursor: pointer; touch-action: manipulation; transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease; }
 .chatbot-launcher:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgb(0 0 0 / 55%), 0 0 24px rgb(0 243 255 / 42%); }
 .chatbot-launcher:focus-visible, .chatbot-dialog button:focus-visible, .chatbot-dialog input:focus-visible { outline: 3px solid var(--green-accent); outline-offset: 3px; }
 .chatbot-launcher svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
@@ -33,7 +33,7 @@
 /* Mantiene accesible la página y presenta el chat como un panel inferior en teléfonos. */
 @media (max-width: 600px) {
   .chatbot-launcher { right: max(12px, env(safe-area-inset-right, 0px)); bottom: max(12px, env(safe-area-inset-bottom, 0px)); width: 56px; height: 56px; }
-  .chatbot-dialog { top: auto; right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(max(12px, env(safe-area-inset-bottom, 0px)) + 68px); left: max(12px, env(safe-area-inset-left, 0px)); width: auto; height: min(56vh, 420px); height: min(56dvh, 420px); max-height: calc(100vh - 104px); max-height: calc(100dvh - 104px); border-radius: .75rem; }
+  .chatbot-dialog { top: auto; right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(max(12px, env(safe-area-inset-bottom, 0px)) + 68px); left: max(12px, env(safe-area-inset-left, 0px)); width: auto; max-width: calc(100vw - 24px); height: min(56vh, 420px); height: min(56dvh, 420px); max-height: calc(100vh - 104px); max-height: calc(100dvh - 104px); border-radius: .75rem; }
 }
 
 /* Elimina desplazamientos animados cuando la persona lo solicita en el sistema. */
