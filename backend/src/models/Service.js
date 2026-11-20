@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 // Conserva los campos descriptivos sin inventar precios ni tiempos.
 const serviceSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true, maxlength: 100 },
+  icon: { type: String, trim: true, maxlength: 16, default: '' },
   description: { type: String, required: true, trim: true, maxlength: 1000 },
   category: { type: String, required: true, trim: true, maxlength: 60 },
   estimatedTime: { type: String, trim: true, maxlength: 100, default: '' },

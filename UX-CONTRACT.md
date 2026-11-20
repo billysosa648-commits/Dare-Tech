@@ -16,10 +16,10 @@
 | API React | `frontend/src/services/api.js` | Todas las llamadas React pasan por `apiFetch`. |
 | Sesión JWT React | `frontend/src/services/sessionStore.js` | Token solo en memoria; se pierde al recargar. |
 | Campos | Formularios del panel React en `frontend/src/pages/AdminScaffold.jsx` | Etiqueta y estado permanecen asociados; el borrador se conserva en caso de error. |
-| Selección múltiple | frontend/src/components/DeleteRecordsDialog.jsx (React) y frontend/js/admin.js (admin.html) | La tabla unificada muestra reportes y facturas; seleccionar visibles aplica al filtro actual, conserva selección al buscar y limita cada operación a 100 elementos. |
-| Confirmación de borrado | Diálogo de ambos paneles | Confirma cantidad y registros; para borrar un reporte se deben seleccionar también todas sus facturas asociadas. |
+| Selección múltiple | `frontend/src/components/DeleteRecordsDialog.jsx` (React, dentro del panel `admin.html`) | La tabla unificada muestra reportes y facturas; seleccionar visibles aplica al filtro actual, conserva selección al buscar y limita cada operación a 5 elementos. |
+| Confirmación de borrado | Diálogo React de `frontend/src/components/DeleteRecordsDialog.jsx` | Confirma cantidad y registros; para borrar un reporte se deben seleccionar también todas sus facturas asociadas. |
 | Mensajes | Regiones de estado del panel y formularios | Los conflictos muestran facturas relacionadas y una opción de recuperación. |
-| Servicios | `Service` y `/api/services` | Nombre, categoría, descripción, estado y tiempo estimado opcional; gestión por el panel. |
+| Servicios | `Service` y `/api/services` | Nombre, emoji opcional para el icono de la tarjeta, categoría, descripción, estado y tiempo estimado opcional; gestión por el panel. Los registros existentes conservan un icono de respaldo. |
 | Asistente de portada | `frontend/src/home.jsx` y `/api/chatbot` | Texto FAQ, sugerencias seleccionables y aviso de que precio/tiempo requieren diagnóstico. |
 
 ## Comportamiento de operaciones
@@ -31,4 +31,4 @@
 | Guardar FAQ | Conservar el borrador durante la solicitud | Mantenerse en el editor y mostrar guardado | Mantener el contenido para corregir y reintentar. |
 | Búsqueda | Indicar carga y conservar filtros | Actualizar resultados | Mostrar error recuperable sin borrar la búsqueda. |
 
-Los documentos antiguos quedan activos hasta que la versión React de cada pantalla esté conectada y confirmada. Los mensajes de error y éxito usan texto, no solo color. Las ventanas modales devuelven el foco al control que las abrió y cierran con `Escape` cuando no hay una operación destructiva pendiente.
+El panel React es el panel administrativo principal; `admin-react.html` conserva una redirección para enlaces previos. El seguimiento público continúa como página independiente. Los mensajes de error y éxito usan texto, no solo color. Las ventanas modales devuelven el foco al control que las abrió y cierran con `Escape` cuando no hay una operación destructiva pendiente.

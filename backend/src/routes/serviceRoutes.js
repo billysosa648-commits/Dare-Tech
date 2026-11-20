@@ -8,8 +8,8 @@ const { validate, onlyBodyFields } = require('../middlewares/validation');
 
 // Define reglas para crear y editar servicios con los mismos límites.
 const router = express.Router();
-const fields = ['name', 'description', 'category', 'estimatedTime', 'active', 'order'];
-const rules = () => [body('name').optional().isString().trim().isLength({ min: 1, max: 100 }), body('description').optional().isString().trim().isLength({ min: 1, max: 1000 }), body('category').optional().isString().trim().isLength({ min: 1, max: 60 }), body('estimatedTime').optional().isString().trim().isLength({ max: 100 }), body('active').optional().isBoolean().toBoolean(), body('order').optional().isInt({ min: 0, max: 10000 }).toInt()];
+const fields = ['name', 'icon', 'description', 'category', 'estimatedTime', 'active', 'order'];
+const rules = () => [body('name').optional().isString().trim().isLength({ min: 1, max: 100 }), body('icon').optional().isString().trim().isLength({ max: 16 }), body('description').optional().isString().trim().isLength({ min: 1, max: 1000 }), body('category').optional().isString().trim().isLength({ min: 1, max: 60 }), body('estimatedTime').optional().isString().trim().isLength({ max: 100 }), body('active').optional().isBoolean().toBoolean(), body('order').optional().isInt({ min: 0, max: 10000 }).toInt()];
 // Publica únicamente servicios activos y ordenados.
 router.get('/', async (req, res) => res.json(await Service.find({ active: true }).sort({ order: 1, _id: 1 }).lean()));
 // Protege todas las operaciones de gestión desde este punto.

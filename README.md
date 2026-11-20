@@ -1,6 +1,6 @@
 # Dare-Tech
 
-Servicio técnico Dare-Tech con backend Express/MongoDB y frontend estático/React. El panel React se encuentra en `admin-react.html`; el panel anterior `admin.html`, sus scripts y el seguimiento continúan disponibles durante la transición.
+Servicio técnico Dare-Tech con backend Express/MongoDB y frontend React. El panel administrativo React usa la ruta estable `admin.html`; `admin-react.html` redirige a esa ruta para conservar enlaces anteriores. La página de seguimiento continúa disponible.
 
 ## Backend local
 
@@ -15,7 +15,7 @@ En Render define `NODE_ENV=production`, `TRUST_PROXY_HOPS=1`, `TURNSTILE_SITE_KE
 
 1. En `frontend/`, copia `.env.example` a `.env.local` y ajusta `VITE_API_BASE_URL` si el backend no corre en `http://localhost:4000/api`.
 2. Instala con `npm install` (Node.js `22.12` o superior, requerido por Wrangler).
-3. Inicia Vite con `npm run dev`; el panel React queda en `http://127.0.0.1:5173/admin-react.html` e incluye diagnósticos, estados, facturas, marcas/modelos, servicios, FAQs y cambio de contraseña.
+3. Inicia Vite con `npm run dev`; el panel React queda en `http://127.0.0.1:5173/admin.html` e incluye diagnósticos, estados, facturas, marcas/modelos, servicios, FAQs y cambio de contraseña. `admin-react.html` redirige al panel principal.
 4. Compila Tailwind y todas las páginas con `npm run build`; Vite escribe los archivos publicables en `frontend/dist/`.
 5. Revisa localmente con `npm run preview`.
 6. Para publicar en Cloudflare Workers, autentica una vez con `npx wrangler login` y después ejecuta `npm run deploy`.

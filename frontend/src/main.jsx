@@ -1,4 +1,4 @@
-// Inicia la aplicación React de prueba en admin-react.html.
+// Inicia el panel administrativo React servido en admin.html.
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import '../css/tailwind.css';

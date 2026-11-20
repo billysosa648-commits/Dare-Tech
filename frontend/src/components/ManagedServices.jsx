@@ -16,7 +16,7 @@ export default function ManagedServices() {
   if (!services.length) return null;
   return <div className="service-list managed-service-list" aria-label="Servicios adicionales">
     {services.map((service, index) => <article className={`service-card${index % 2 ? ' service-card--green' : ''}`} key={service._id}>
-      <div className={`service-card__icon ${index % 2 ? 'service-card__icon--green' : 'service-card__icon--cyan'}`} aria-hidden="true">{index % 2 ? '⚙' : '⌁'}</div>
+      <div className={`service-card__icon ${index % 2 ? 'service-card__icon--green' : 'service-card__icon--cyan'}`} aria-hidden="true">{service.icon || (index % 2 ? '⚙️' : '🛠️')}</div>
       <p className="service-card__category">{service.category}</p>
       <h3 className="service-card__title">{service.name}</h3>
       <p>{service.description}</p>

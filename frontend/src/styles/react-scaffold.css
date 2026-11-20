@@ -40,6 +40,12 @@
 .admin-list { display: grid; gap: .8rem; }
 .admin-record, .admin-row { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; padding: 1rem; }
 .admin-record__main, .admin-row > div { flex: 1 1 18rem; min-width: 0; }
+.admin-row__service { display: flex; align-items: flex-start; gap: .85rem; }
+.admin-row__service-icon { flex: 0 0 auto; font-size: 1.6rem; line-height: 1.2; }
+.service-icon-preview { display: flex; align-items: center; justify-content: space-between; max-width: 18rem; padding: .65rem .8rem; border: 1px solid rgb(0 243 255 / 24%); color: #a8bec2; background: rgb(0 243 255 / 4%); }
+.service-icon-preview strong { color: #e2e8f0; font-size: 1.7rem; line-height: 1; }
+.service-emoji-options { display: flex; flex-wrap: wrap; gap: .4rem; }
+.service-emoji-options button { min-width: 2.6rem; padding: .4rem; font-size: 1.2rem; }
 .admin-record h2 { margin: .25rem 0; color: #e6fbfc; font-size: 1.1rem; }
 .admin-record p, .admin-row p { overflow-wrap: anywhere; }
 .admin-check, .admin-inline { display: flex !important; align-items: center; gap: .55rem !important; }
