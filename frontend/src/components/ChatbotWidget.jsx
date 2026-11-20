@@ -16,9 +16,9 @@ export default function ChatbotWidget() {
   const inputRef = useRef(null);
   const messagesEndRef = useRef(null);
 
-  // Enfoca el campo al abrir y conserva la conversación al cerrar.
+  // Evita abrir el teclado móvil automáticamente al mostrar el chat.
   useEffect(() => {
-    if (open) inputRef.current?.focus();
+    if (open && !window.matchMedia('(pointer: coarse)').matches) inputRef.current?.focus();
   }, [open]);
 
   // Mantiene a la vista la respuesta más reciente sin borrar el historial.
@@ -57,7 +57,7 @@ export default function ChatbotWidget() {
       setMessages(current => [...current, { role: 'assistant', text: error.message || 'No se pudo enviar la pregunta.' }]);
     } finally {
       setBusy(false);
-      inputRef.current?.focus();
+      if (!window.matchMedia('(pointer: coarse)').matches) inputRef.current?.focus();
     }
   }
 

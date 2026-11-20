@@ -30,9 +30,10 @@
 .chatbot-dialog__composer button:disabled { opacity: .5; cursor: wait; }
 @keyframes chatbot-pulse { from { opacity: .55; } to { opacity: 1; } }
 
-/* Maximiza el cuadro móvil y respeta el espacio reservado por los bordes del dispositivo. */
+/* Mantiene accesible la página y presenta el chat como un panel inferior en teléfonos. */
 @media (max-width: 600px) {
-  .chatbot-dialog { top: max(8px, env(safe-area-inset-top, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); bottom: max(8px, env(safe-area-inset-bottom, 0px)); left: max(8px, env(safe-area-inset-left, 0px)); width: auto; height: auto; max-height: none; border-radius: .5rem; }
+  .chatbot-launcher { right: max(12px, env(safe-area-inset-right, 0px)); bottom: max(12px, env(safe-area-inset-bottom, 0px)); width: 56px; height: 56px; }
+  .chatbot-dialog { top: auto; right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(max(12px, env(safe-area-inset-bottom, 0px)) + 68px); left: max(12px, env(safe-area-inset-left, 0px)); width: auto; height: min(56vh, 420px); height: min(56dvh, 420px); max-height: calc(100vh - 104px); max-height: calc(100dvh - 104px); border-radius: .75rem; }
 }
 
 /* Elimina desplazamientos animados cuando la persona lo solicita en el sistema. */
