@@ -109,9 +109,9 @@ function AdminDialog({ dialog, setDialog, busy, mutate, confirmDelete }) {
   const idempotencyKey = useRef(null);
   const [form, setForm] = useState(() => dialog.type === 'brand' ? { name: dialog.brand?.name || '', models: dialog.brand?.models?.join('\n') || '' } : dialog.type === 'service' ? { name: dialog.service?.name || '', icon: dialog.service?.icon || '', description: dialog.service?.description || '', category: dialog.service?.category || '', estimatedTime: dialog.service?.estimatedTime || '', active: dialog.service?.active ?? true } : dialog.type === 'faq' ? { question: dialog.faq?.question || '', answer: dialog.faq?.answer || '', category: dialog.faq?.category || 'general', keywords: dialog.faq?.keywords?.join(', ') || '', active: dialog.faq?.active ?? true } : dialog.type === 'invoice' ? { mode: 'new', ticketNumber: '', customerName: '', customerContact: '', brand: '', model: '', issue: '', items: '', discount: '0', notes: '' } : dialog.type === 'customer-edit' ? { customerName: dialog.invoice?.customer?.name || '' } : { items: dialog.invoice?.items?.map(item => `${item.description}|${item.quantity}|${item.unitPrice}`).join('\n') || '', notes: dialog.invoice?.notes || '' });
   const [input, setInput] = useState(''), [withInvoices, setWithInvoices] = useState(false), [dialogError, setDialogError] = useState('');
-  // Closes the dialog with Escape and restores keyboard-friendly native behavior.
+  // Cierra el diálogo con Escape y restaura el comportamiento nativo accesible por teclado.
   useEffect(() => { const onKey = event => event.key === 'Escape' && setDialog(null); window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }, [setDialog]);
-  // Serializes each editor into the API shape expected by its endpoint.
+  // Convierte cada formulario al formato que espera el endpoint de la API.
   async function submit(event) {
     event.preventDefault();
     if (dialog.type === 'delete') { dialog.input = input; dialog.withInvoices = withInvoices; await confirmDelete(); return; }

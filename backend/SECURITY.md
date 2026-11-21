@@ -13,7 +13,7 @@
 ## Eliminación administrativa y auditoría
 
 - `DELETE /api/invoices/:id` elimina definitivamente una factura. La acción administrativa anterior de anular facturas se conserva en `PATCH /api/invoices/:id/annul`.
-- `DELETE /api/diagnostics/:id` responde `409` con las facturas asociadas. Solo `?withInvoices=true` permite borrar el diagnóstico junto con ellas. Los endpoints `/bulk-delete` aceptan de 1 a 100 IDs Mongo explícitos.
+- `DELETE /api/diagnostics/:id` responde `409` con las facturas asociadas. Solo `?withInvoices=true` permite borrar el diagnóstico junto con ellas. Los endpoints `/bulk-delete` aceptan de 8 a 21 IDs Mongo explícitos.
 - Las eliminaciones definitivas crean registros en la colección `auditlogs` con ID del administrador, tipo de documento, ID y número de referencia, fecha e IP. No se copian nombre, contacto, descripción ni otros datos del cliente.
 - Las facturas usan un contador separado y un número único `DT-000001` en adelante. El contador no retrocede al borrar: los números eliminados quedan como huecos y nunca se reutilizan.
 
